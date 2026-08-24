@@ -3,599 +3,2920 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NetSage AI — Troubleshooting Console</title>
+
+<title>NetSage AI</title>
+
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
-  :root{
-    --bg:#0d1520;
-    --panel:#141e2b;
-    --panel-2:#182535;
-    --line:#25384d;
-    --line-soft:#1c2c3d;
-    --text:#dce6f0;
-    --text-dim:#8fa3b8;
-    --text-faint:#5b7086;
-    --amber:#e8a33d;
-    --amber-dim:#8a662a;
-    --teal:#3fc7b8;
-    --teal-dim:#1f5c54;
-    --green:#5bc77e;
-    --red:#e2574c;
-    --blue:#5b9be2;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'IBM Plex Sans', sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    margin:0; background:var(--bg); color:var(--text); font-family:var(--sans);
-    line-height:1.5;
-  }
-  ::selection{background:var(--amber); color:#1a1206;}
+/* =========================
+   RESET
+========================= */
 
-  a{color:var(--teal);}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+:root {
+    --bg: #080b12;
+    --sidebar: #0d111a;
+    --card: #111722;
+    --card2: #151c29;
+    --border: #252d3b;
 
-  /* ---------- Nav ---------- */
-  nav{
-    position:sticky; top:0; z-index:50; background:rgba(13,21,32,0.92); backdrop-filter:blur(6px);
-    border-bottom:1px solid var(--line-soft);
-  }
-  nav .wrap{display:flex; align-items:center; justify-content:space-between; height:60px;}
-  .brand{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-weight:600; letter-spacing:0.02em;}
-  .brand .dot{width:9px; height:9px; border-radius:50%; background:var(--amber); box-shadow:0 0 8px var(--amber);}
-  .brand span.tag{color:var(--text-faint); font-weight:400; font-size:12px; margin-left:8px; font-family:var(--sans);}
-  .navlinks{display:flex; gap:22px; font-size:13px; font-family:var(--mono);}
-  .navlinks a{color:var(--text-dim); text-decoration:none; letter-spacing:0.03em;}
-  .navlinks a:hover{color:var(--amber);}
+    --text: #f5f7fb;
+    --muted: #8c97a8;
 
-  /* ---------- Hero ---------- */
-  header.hero{padding:64px 0 40px; border-bottom:1px solid var(--line-soft);}
-  .hero-grid{display:grid; grid-template-columns:1.05fr 0.95fr; gap:48px; align-items:center;}
-  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;}}
-  .eyebrow{font-family:var(--mono); font-size:12px; color:var(--amber); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:14px;}
-  h1{font-size:40px; line-height:1.12; margin:0 0 18px; letter-spacing:-0.01em;}
-  h1 em{color:var(--amber); font-style:normal;}
-  .hero p.lede{color:var(--text-dim); font-size:16px; max-width:46ch; margin:0 0 26px;}
-  .hero-cta{display:flex; gap:12px; flex-wrap:wrap;}
-  .btn{
-    font-family:var(--mono); font-size:13px; padding:11px 18px; border-radius:6px; cursor:pointer;
-    border:1px solid var(--line); background:var(--panel-2); color:var(--text); text-decoration:none; display:inline-flex; align-items:center; gap:8px;
-    transition:border-color .15s, transform .1s;
-  }
-  .btn:hover{border-color:var(--amber);}
-  .btn:active{transform:translateY(1px);}
-  .btn.primary{background:var(--amber); border-color:var(--amber); color:#1a1206; font-weight:600;}
-  .btn.primary:hover{filter:brightness(1.08);}
-  .btn.green{border-color:var(--green); color:var(--green);}
-  .btn.green:hover{background:rgba(91,199,126,.1);}
-  .btn.red{border-color:var(--red); color:var(--red);}
-  .btn.red:hover{background:rgba(226,87,76,.1);}
-  .btn.teal{border-color:var(--teal); color:var(--teal);}
-  .btn.teal:hover{background:rgba(63,199,184,.1);}
-  .btn[disabled]{opacity:.35; cursor:not-allowed;}
+    --blue: #4f8cff;
+    --green: #29d391;
+    --red: #ff5c69;
+    --yellow: #f5bd4f;
+    --purple: #9b7cff;
+}
 
-  /* terminal mock in hero */
-  .term{
-    background:#0a1119; border:1px solid var(--line); border-radius:10px; overflow:hidden;
-    box-shadow:0 20px 60px -20px rgba(0,0,0,.6);
-  }
-  .term-bar{display:flex; align-items:center; gap:6px; padding:10px 14px; background:var(--panel); border-bottom:1px solid var(--line);}
-  .term-bar i{width:9px; height:9px; border-radius:50%; display:inline-block;}
-  .term-bar span.title{margin-left:8px; font-family:var(--mono); font-size:11px; color:var(--text-faint);}
-  .term pre{margin:0; padding:18px; font-family:var(--mono); font-size:12.5px; color:var(--teal); overflow-x:auto; white-space:pre-wrap;}
-  .term pre .k{color:var(--blue);}
-  .term pre .s{color:var(--amber);}
-  .term .cursor{display:inline-block; width:7px; height:14px; background:var(--amber); vertical-align:middle; animation:blink 1s steps(1) infinite;}
-  @keyframes blink{50%{opacity:0;}}
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
 
-  section{padding:56px 0; border-bottom:1px solid var(--line-soft);}
-  .section-head{margin-bottom:28px;}
-  .section-head .eyebrow{margin-bottom:8px;}
-  h2{font-size:26px; margin:0 0 8px; letter-spacing:-0.01em;}
-  .section-sub{color:var(--text-dim); font-size:14.5px; max-width:70ch; margin:0;}
 
-  /* ---------- Case explorer ---------- */
-  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;}
-  .chip{
-    font-family:var(--mono); font-size:12px; padding:7px 13px; border-radius:20px; border:1px solid var(--line);
-    background:var(--panel-2); color:var(--text-dim); cursor:pointer; user-select:none;
-  }
-  .chip.active{border-color:var(--amber); color:var(--amber); background:rgba(232,163,61,.08);}
+/* =========================
+   SIDEBAR
+========================= */
 
-  .explorer{display:grid; grid-template-columns:360px 1fr; gap:22px; align-items:start;}
-  @media(max-width:900px){.explorer{grid-template-columns:1fr;}}
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
 
-  .case-list{max-height:640px; overflow-y:auto; border:1px solid var(--line-soft); border-radius:10px; background:var(--panel);}
-  .case-item{padding:13px 16px; border-bottom:1px solid var(--line-soft); cursor:pointer;}
-  .case-item:last-child{border-bottom:none;}
-  .case-item:hover{background:var(--panel-2);}
-  .case-item.active{background:rgba(232,163,61,.08); border-left:3px solid var(--amber); padding-left:13px;}
-  .case-item .row1{display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;}
-  .case-id{font-family:var(--mono); font-size:11.5px; color:var(--text-faint);}
-  .tag{font-family:var(--mono); font-size:10.5px; padding:2px 8px; border-radius:10px; border:1px solid var(--line); color:var(--text-dim);}
-  .case-item .symptom{font-size:13px; color:var(--text-dim); line-height:1.4;}
-  .led{width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:6px;}
-  .led.Low{background:var(--teal);}
-  .led.Medium{background:var(--amber);}
-  .led.High{background:#e28c3f;}
-  .led.Critical{background:var(--red);}
+    width: 250px;
 
-  .panel{background:var(--panel); border:1px solid var(--line-soft); border-radius:10px; padding:22px;}
-  .panel + .panel{margin-top:16px;}
-  .panel h3{margin:0 0 12px; font-size:14px; font-family:var(--mono); color:var(--text-dim); letter-spacing:0.04em; text-transform:uppercase;}
-  .kv{font-size:13.5px; color:var(--text); margin-bottom:10px;}
-  .kv b{color:var(--text-faint); font-weight:500; display:block; font-size:11px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px;}
-  .code-block{
-    font-family:var(--mono); font-size:12.5px; background:#0a1119; border:1px solid var(--line); border-radius:8px;
-    padding:12px 14px; white-space:pre-wrap; color:#a9c7d6; overflow-x:auto;
-  }
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
 
-  .diag-actions{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+    padding: 25px 18px;
 
-  .diag-output{border:1px solid var(--line); border-radius:8px; background:#0a1119; padding:16px; font-family:var(--mono); font-size:12.5px;}
-  .diag-field{margin-bottom:10px;}
-  .diag-field .flabel{color:var(--text-faint); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:3px;}
-  .diag-field .fval{color:var(--text);}
-  .conf-badge{display:inline-block; padding:2px 9px; border-radius:10px; font-size:10.5px; font-family:var(--mono);}
-  .conf-High{background:rgba(91,199,126,.15); color:var(--green);}
-  .conf-Medium{background:rgba(232,163,61,.15); color:var(--amber);}
-  .conf-Low{background:rgba(226,87,76,.15); color:var(--red);}
+    z-index: 10;
+}
 
-  .review-status{font-family:var(--mono); font-size:12px; padding:4px 10px; border-radius:6px; display:inline-block;}
-  .review-status.Pending{background:rgba(143,163,184,.15); color:var(--text-dim);}
-  .review-status.Accepted{background:rgba(91,199,126,.15); color:var(--green);}
-  .review-status.Edited{background:rgba(91,155,226,.15); color:var(--blue);}
-  .review-status.Rejected{background:rgba(226,87,76,.15); color:var(--red);}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 
-  textarea, input[type=text]{
-    width:100%; background:#0a1119; border:1px solid var(--line); color:var(--text); border-radius:6px; padding:9px 11px;
-    font-family:var(--sans); font-size:13px; resize:vertical;
-  }
-  label.small-label{font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; display:block; margin:12px 0 5px;}
+    margin-bottom: 35px;
+}
 
-  .rule-finding{border-left:3px solid var(--amber); background:rgba(232,163,61,.06); padding:8px 12px; border-radius:0 6px 6px 0; margin-bottom:8px; font-size:13px;}
-  .rule-finding.sev-High{border-color:var(--red); background:rgba(226,87,76,.06);}
-  .rule-finding.sev-Medium{border-color:var(--amber);}
-  .rule-finding .fcheck{font-family:var(--mono); font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em;}
-  .rule-clean{color:var(--green); font-size:13px; font-family:var(--mono);}
+.logo-icon {
+    width: 42px;
+    height: 42px;
 
-  /* ---------- Dashboard ---------- */
-  .dash-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:26px;}
-  @media(max-width:800px){.dash-grid{grid-template-columns:repeat(2,1fr);}}
-  .stat-card{background:var(--panel); border:1px solid var(--line-soft); border-radius:10px; padding:18px;}
-  .stat-num{font-family:var(--mono); font-size:30px; color:var(--amber); font-weight:600;}
-  .stat-label{font-size:12px; color:var(--text-dim); margin-top:4px;}
+    border-radius: 12px;
 
-  .charts{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
-  @media(max-width:800px){.charts{grid-template-columns:1fr;}}
-  .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:12.5px;}
-  .bar-label{width:88px; flex-shrink:0; color:var(--text-dim); font-family:var(--mono); font-size:11.5px;}
-  .bar-track{flex:1; background:var(--line-soft); border-radius:4px; height:16px; overflow:hidden;}
-  .bar-fill{height:100%; background:linear-gradient(90deg, var(--teal-dim), var(--teal)); border-radius:4px;}
-  .bar-fill.amber{background:linear-gradient(90deg, var(--amber-dim), var(--amber));}
-  .bar-count{width:26px; text-align:right; color:var(--text-faint); font-family:var(--mono); font-size:11.5px;}
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  .agree-bar{display:flex; height:26px; border-radius:6px; overflow:hidden; border:1px solid var(--line-soft); margin-bottom:10px;}
-  .agree-seg{display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#0a1119; font-weight:600;}
-  .agree-seg.Accepted{background:var(--green);}
-  .agree-seg.Edited{background:var(--blue); color:#0a1119;}
-  .agree-seg.Rejected{background:var(--red);}
-  .legend{display:flex; gap:16px; font-size:12px; color:var(--text-dim); flex-wrap:wrap;}
-  .legend span{display:flex; align-items:center; gap:6px;}
-  .legend i{width:9px; height:9px; border-radius:2px; display:inline-block;}
+    background: linear-gradient(135deg,#4f8cff,#8065ff);
 
-  /* ---------- Responsible AI log ---------- */
-  .log-entry{background:var(--panel); border:1px solid var(--line-soft); border-radius:10px; padding:20px; margin-bottom:16px;}
-  .log-entry .log-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;}
-  .log-entry .log-head .cid{font-family:var(--mono); color:var(--amber); font-weight:600;}
-  .log-cols{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
-  @media(max-width:800px){.log-cols{grid-template-columns:1fr;}}
-  .log-col h4{margin:0 0 6px; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); font-family:var(--mono);}
-  .log-col.before{border-left:3px solid var(--red); padding-left:12px;}
-  .log-col.after{border-left:3px solid var(--green); padding-left:12px;}
-  .reviewer-note{margin-top:12px; font-size:13px; color:var(--text-dim); background:var(--panel-2); border-radius:8px; padding:10px 12px; border:1px solid var(--line-soft);}
+    font-weight: bold;
+    font-size: 20px;
+}
 
-  footer{padding:36px 0 60px; color:var(--text-faint); font-size:12.5px;}
-  footer .wrap{display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+.logo h2 {
+    font-size: 18px;
+}
 
-  .empty-hint{color:var(--text-faint); font-size:13px; font-style:italic; padding:20px 0;}
-  ::-webkit-scrollbar{width:8px; height:8px;}
-  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+.logo p {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.nav button {
+    width: 100%;
+
+    padding: 13px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: transparent;
+
+    color: var(--muted);
+
+    text-align: left;
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+.nav button:hover {
+    background: var(--card2);
+    color: white;
+}
+
+.nav button.active {
+    background: var(--blue);
+    color: white;
+}
+
+
+.sidebar-status {
+    position: absolute;
+
+    bottom: 25px;
+    left: 18px;
+    right: 18px;
+
+    padding: 13px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: var(--card);
+}
+
+.online {
+    width: 8px;
+    height: 8px;
+
+    display: inline-block;
+
+    background: var(--green);
+
+    border-radius: 50%;
+
+    margin-right: 7px;
+}
+
+.sidebar-status small {
+    color: var(--muted);
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.main {
+    margin-left: 250px;
+
+    min-height: 100vh;
+
+    padding: 0 35px;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    height: 85px;
+
+    border-bottom: 1px solid var(--border);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header h1 {
+    font-size: 23px;
+}
+
+.header p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.ai-mode {
+    border: 1px solid var(--border);
+
+    padding: 9px 13px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    color: var(--muted);
+}
+
+
+/* =========================
+   SECTIONS
+========================= */
+
+.section {
+    display: none;
+
+    padding: 30px 0;
+}
+
+.section.active {
+    display: block;
+}
+
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+    background:
+        radial-gradient(
+            circle at right,
+            rgba(79,140,255,.2),
+            transparent 40%
+        ),
+        var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 18px;
+
+    padding: 40px;
+
+    min-height: 260px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hero h2 {
+    font-size: 36px;
+    max-width: 700px;
+    line-height: 1.15;
+}
+
+.hero h2 span {
+    color: var(--blue);
+}
+
+.hero p {
+    color: var(--muted);
+
+    max-width: 650px;
+
+    line-height: 1.7;
+
+    margin: 15px 0 22px;
+}
+
+.hero-icon {
+    font-size: 90px;
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+.primary {
+    background: var(--blue);
+
+    color: white;
+
+    border: none;
+
+    padding: 12px 18px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+.primary:hover {
+    opacity: .85;
+}
+
+
+/* =========================
+   STAT CARDS
+========================= */
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+
+    margin-top: 18px;
+}
+
+.stat {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 13px;
+
+    padding: 18px;
+}
+
+.stat span {
+    color: var(--muted);
+
+    display: block;
+
+    font-size: 12px;
+
+    margin-bottom: 8px;
+}
+
+.stat strong {
+    font-size: 25px;
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard-grid {
+    display: grid;
+
+    grid-template-columns:
+        1.3fr 1fr;
+
+    gap: 18px;
+
+    margin-top: 18px;
+}
+
+.card {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 13px;
+
+    overflow: hidden;
+}
+
+.card-title {
+    padding: 17px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.card-title h3 {
+    font-size: 15px;
+}
+
+.card-title p {
+    color: var(--muted);
+
+    font-size: 11px;
+
+    margin-top: 4px;
+}
+
+
+/* =========================
+   CHART
+========================= */
+
+.chart {
+    padding: 20px;
+}
+
+.chart-row {
+    margin-bottom: 16px;
+}
+
+.chart-name {
+    display: flex;
+    justify-content: space-between;
+
+    font-size: 12px;
+
+    margin-bottom: 6px;
+}
+
+.chart-name span:last-child {
+    color: var(--muted);
+}
+
+.chart-bg {
+    height: 8px;
+
+    background: var(--card2);
+
+    border-radius: 20px;
+}
+
+.chart-fill {
+    height: 100%;
+
+    background: var(--blue);
+
+    border-radius: 20px;
+}
+
+
+/* =========================
+   CASE EXPLORER
+========================= */
+
+.page-heading {
+    margin-bottom: 20px;
+}
+
+.page-heading h2 {
+    font-size: 25px;
+}
+
+.page-heading p {
+    color: var(--muted);
+
+    font-size: 13px;
+
+    margin-top: 5px;
+}
+
+.tools {
+    display: flex;
+    gap: 10px;
+
+    margin-bottom: 18px;
+}
+
+.tools input,
+.tools select {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    color: white;
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+    outline: none;
+}
+
+
+.case-layout {
+    display: grid;
+
+    grid-template-columns:
+        300px 1fr;
+
+    gap: 18px;
+}
+
+
+.case-list {
+    max-height: 700px;
+
+    overflow-y: auto;
+}
+
+
+.case {
+    padding: 15px;
+
+    border-bottom: 1px solid var(--border);
+
+    cursor: pointer;
+}
+
+.case:hover {
+    background: var(--card2);
+}
+
+.case.selected {
+    background: rgba(79,140,255,.12);
+
+    border-left: 3px solid var(--blue);
+}
+
+.case-top {
+    display: flex;
+
+    justify-content: space-between;
+}
+
+.case-id {
+    font-weight: bold;
+
+    font-size: 12px;
+}
+
+.case p {
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+    margin-top: 7px;
+}
+
+
+/* =========================
+   BADGES
+========================= */
+
+.badge {
+    padding: 4px 7px;
+
+    border-radius: 5px;
+
+    font-size: 9px;
+
+    font-weight: bold;
+}
+
+.high {
+    background: rgba(255,92,105,.13);
+
+    color: var(--red);
+}
+
+.medium {
+    background: rgba(245,189,79,.13);
+
+    color: var(--yellow);
+}
+
+.low {
+    background: rgba(41,211,145,.13);
+
+    color: var(--green);
+}
+
+
+/* =========================
+   CASE DETAILS
+========================= */
+
+.details {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+}
+
+.detail-card {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 13px;
+
+    overflow: hidden;
+}
+
+.detail-title {
+    padding: 18px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-title h2 {
+    font-size: 20px;
+}
+
+.detail-content {
+    padding: 18px;
+
+    line-height: 1.7;
+
+    font-size: 13px;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+
+pre {
+    background: #05070b;
+
+    color: #b9c9e8;
+
+    padding: 18px;
+
+    overflow-x: auto;
+
+    white-space: pre-wrap;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================
+   AI RESULT
+========================= */
+
+.ai-result {
+    background: rgba(79,140,255,.06);
+
+    border: 1px solid rgba(79,140,255,.3);
+
+    border-radius: 13px;
+
+    padding: 18px;
+}
+
+.ai-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-bottom: 15px;
+}
+
+.ai-header h3 {
+    color: var(--blue);
+}
+
+.ai-grid {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 12px;
+}
+
+.ai-box {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 9px;
+
+    padding: 13px;
+}
+
+.ai-box.full {
+    grid-column: 1 / -1;
+}
+
+.ai-box label {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    margin-bottom: 6px;
+
+    text-transform: uppercase;
+}
+
+.ai-box p {
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+.ai-box ol {
+    padding-left: 18px;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+}
+
+
+/* =========================
+   RULE CHECKER
+========================= */
+
+.rule-box {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 13px;
+
+    overflow: hidden;
+}
+
+.rule-header {
+    padding: 15px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.rule-finding {
+    padding: 14px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.rule-finding strong {
+    font-size: 12px;
+}
+
+.rule-finding p {
+    color: var(--muted);
+
+    font-size: 11px;
+
+    margin-top: 5px;
+}
+
+
+/* =========================
+   REVIEW
+========================= */
+
+.review-button {
+    width: 100%;
+
+    padding: 13px;
+
+    background: var(--blue);
+
+    color: white;
+
+    border: none;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0,0,0,.75);
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-box {
+    width: 500px;
+
+    max-width: 90%;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    padding: 25px;
+
+    position: relative;
+}
+
+.close {
+    position: absolute;
+
+    top: 10px;
+    right: 15px;
+
+    background: none;
+
+    border: none;
+
+    color: var(--muted);
+
+    font-size: 25px;
+
+    cursor: pointer;
+}
+
+.modal-box p {
+    color: var(--muted);
+
+    font-size: 12px;
+
+    margin: 8px 0 18px;
+}
+
+.decisions {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap: 8px;
+
+    margin-bottom: 18px;
+}
+
+.decisions button {
+    padding: 11px;
+
+    background: var(--card2);
+
+    color: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.decisions button:hover {
+    border-color: var(--blue);
+}
+
+textarea {
+    width: 100%;
+
+    height: 110px;
+
+    resize: vertical;
+
+    background: var(--card2);
+
+    border: 1px solid var(--border);
+
+    color: white;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    outline: none;
+}
+
+
+/* =========================
+   RESPONSIBLE AI
+========================= */
+
+.rai-card {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 13px;
+
+    padding: 18px;
+
+    margin-bottom: 12px;
+}
+
+.rai-card h3 {
+    font-size: 14px;
+
+    margin-bottom: 10px;
+}
+
+.rai-card p {
+    color: var(--muted);
+
+    font-size: 12px;
+
+    line-height: 1.6;
+
+    margin-top: 7px;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    border-top: 1px solid var(--border);
+
+    padding: 20px 0;
+
+    margin-top: 30px;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    display: flex;
+
+    justify-content: space-between;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width: 1000px) {
+
+    .sidebar {
+        width: 70px;
+    }
+
+    .logo h2,
+    .logo p,
+    .nav button span,
+    .sidebar-status {
+        display: none;
+    }
+
+    .main {
+        margin-left: 70px;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .case-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width: 600px) {
+
+    .main {
+        padding: 0 15px;
+    }
+
+    .hero {
+        padding: 25px;
+    }
+
+    .hero h2 {
+        font-size: 27px;
+    }
+
+    .hero-icon {
+        display: none;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-box.full {
+        grid-column: auto;
+    }
+
+    .tools {
+        flex-direction: column;
+    }
+
+    footer {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
 </style>
 </head>
+
+
 <body>
 
-<nav>
-  <div class="wrap">
-    <div class="brand"><span class="dot"></span>NETSAGE<span style="color:var(--text-faint)">AI</span><span class="tag">Applied AI + Network Troubleshooting</span></div>
-    <div class="navlinks">
-      <a href="#explorer">Case Explorer</a>
-      <a href="#dashboard">Dashboard</a>
-      <a href="#log">Responsible AI Log</a>
-      <a href="#demo">Demo Script</a>
-    </div>
-  </div>
-</nav>
 
-<header class="hero">
-  <div class="wrap hero-grid">
+<!-- =========================================
+     SIDEBAR
+========================================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            N
+        </div>
+
+        <div>
+            <h2>NetSage AI</h2>
+            <p>Network Troubleshooter</p>
+        </div>
+
+    </div>
+
+
+    <div class="nav">
+
+        <button class="active" onclick="showPage('dashboard',this)">
+            📊 Dashboard
+        </button>
+
+        <button onclick="showPage('cases',this)">
+            🔍 Case Explorer
+        </button>
+
+        <button onclick="showPage('review',this)">
+            👤 Human Review
+        </button>
+
+        <button onclick="showPage('rai',this)">
+            🛡️ Responsible AI
+        </button>
+
+    </div>
+
+
+    <div class="sidebar-status">
+
+        <span class="online"></span>
+
+        <strong>System Ready</strong>
+
+        <br>
+
+        <small>
+            Human review required
+        </small>
+
+    </div>
+
+</aside>
+
+
+<!-- =========================================
+     MAIN
+========================================= -->
+
+<main class="main">
+
+
+<header class="header">
+
     <div>
-      <div class="eyebrow">// Project 2 — Human-Reviewed AI Troubleshooter</div>
-      <h1>The AI reads the symptom.<br>A human signs off <em>every</em> fix.</h1>
-      <p class="lede">NetSage AI turns a symptom, a topology note, and raw show-command
-      output into a structured diagnosis — root cause, OSI layer, next command,
-      evidence, and fix steps. Nothing reaches a device until a reviewer
-      accepts, edits, or rejects it.</p>
-      <div class="hero-cta">
-        <a href="#explorer" class="btn primary">Open case explorer →</a>
-        <a href="#dashboard" class="btn">View dashboard</a>
-      </div>
+
+        <h1 id="pageTitle">
+            Dashboard
+        </h1>
+
+        <p id="pageSubtitle">
+            AI-assisted network troubleshooting
+        </p>
+
     </div>
-    <div class="term">
-      <div class="term-bar"><i style="background:#e2574c"></i><i style="background:#e8a33d"></i><i style="background:#5bc77e"></i><span class="title">diagnose_prompt.md → response</span></div>
-      <pre>{
-  <span class="k">"root_cause"</span>: <span class="s">"VLAN 30 pruned from trunk"</span>,
-  <span class="k">"osi_layer"</span>: <span class="s">"Layer 2"</span>,
-  <span class="k">"confidence"</span>: <span class="s">"High"</span>,
-  <span class="k">"evidence"</span>: <span class="s">"allowed vlan list = 10,20"</span>,
-  <span class="k">"next_command"</span>: <span class="s">"show interfaces trunk"</span>,
-  <span class="k">"fix_steps"</span>: [ <span class="s">"..."</span> ]
-}
-<span class="cursor"></span></pre>
+
+
+    <div class="ai-mode">
+
+        🟢 AI Advisory Mode
+
     </div>
-  </div>
+
 </header>
 
-<section id="explorer">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">01 / Case Explorer</div>
-      <h2>32 lab cases across 8 fault types</h2>
-      <p class="section-sub">Pick a case to see the evidence, run the AI diagnosis, check it against
-      the deterministic rule checker, and log a human review decision.</p>
+
+<!-- =========================================
+     DASHBOARD
+========================================= -->
+
+<section id="dashboard" class="section active">
+
+    <div class="hero">
+
+        <div>
+
+            <h2>
+                Network troubleshooting,
+                <span>with human oversight.</span>
+            </h2>
+
+            <p>
+                NetSage AI analyzes network symptoms and
+                show-command output to identify likely causes,
+                recommend next commands, and provide fix steps.
+                Every diagnosis requires human review.
+            </p>
+
+            <button
+                class="primary"
+                onclick="showPageById('cases')"
+            >
+                Explore Cases →
+            </button>
+
+        </div>
+
+
+        <div class="hero-icon">
+            🧠
+        </div>
+
     </div>
-    <div class="filters" id="filters"></div>
-    <div class="explorer">
-      <div class="case-list" id="caseList"></div>
-      <div id="caseDetail"></div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+
+            <span>
+                Total Cases
+            </span>
+
+            <strong id="totalCases">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat">
+
+            <span>
+                High Severity
+            </span>
+
+            <strong id="highCases">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat">
+
+            <span>
+                Reviewed
+            </span>
+
+            <strong id="reviewedCases">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat">
+
+            <span>
+                AI-Human Agreement
+            </span>
+
+            <strong id="agreement">
+                0%
+            </strong>
+
+        </div>
+
     </div>
-  </div>
+
+
+    <div class="dashboard-grid">
+
+        <div class="card">
+
+            <div class="card-title">
+
+                <h3>
+                    Issues by Type
+                </h3>
+
+                <p>
+                    Network troubleshooting categories
+                </p>
+
+            </div>
+
+            <div
+                class="chart"
+                id="issueChart"
+            ></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+
+                <h3>
+                    Human Review
+                </h3>
+
+                <p>
+                    Current review decisions
+                </p>
+
+            </div>
+
+            <div class="chart">
+
+                <div class="chart-row">
+
+                    <div class="chart-name">
+                        <span>Accepted</span>
+                        <span id="accepted">0</span>
+                    </div>
+
+                    <div class="chart-bg">
+                        <div
+                            class="chart-fill"
+                            id="acceptedBar"
+                        ></div>
+                    </div>
+
+                </div>
+
+
+                <div class="chart-row">
+
+                    <div class="chart-name">
+                        <span>Edited</span>
+                        <span id="edited">0</span>
+                    </div>
+
+                    <div class="chart-bg">
+                        <div
+                            class="chart-fill"
+                            id="editedBar"
+                        ></div>
+                    </div>
+
+                </div>
+
+
+                <div class="chart-row">
+
+                    <div class="chart-name">
+                        <span>Rejected</span>
+                        <span id="rejected">0</span>
+                    </div>
+
+                    <div class="chart-bg">
+                        <div
+                            class="chart-fill"
+                            id="rejectedBar"
+                        ></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
 
-<section id="dashboard">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">02 / Dashboard</div>
-      <h2>Issue themes &amp; AI–human agreement</h2>
-      <p class="section-sub">Updates live as you review cases in the explorer above.</p>
+
+<!-- =========================================
+     CASE EXPLORER
+========================================= -->
+
+<section id="cases" class="section">
+
+    <div class="page-heading">
+
+        <h2>
+            Case Explorer
+        </h2>
+
+        <p>
+            Browse network troubleshooting cases
+            and analyze their evidence.
+        </p>
+
     </div>
-    <div class="dash-grid" id="statCards"></div>
-    <div class="charts">
-      <div class="panel">
-        <h3>Cases by fault type</h3>
-        <div id="chartConcept"></div>
-      </div>
-      <div class="panel">
-        <h3>Cases by severity</h3>
-        <div id="chartSeverity"></div>
-      </div>
+
+
+    <div class="tools">
+
+        <select id="category">
+
+            <option value="all">
+                All Issues
+            </option>
+
+            <option value="VLAN">
+                VLAN
+            </option>
+
+            <option value="Gateway">
+                Gateway
+            </option>
+
+            <option value="DHCP">
+                DHCP
+            </option>
+
+            <option value="DNS">
+                DNS
+            </option>
+
+            <option value="Routing">
+                Routing
+            </option>
+
+            <option value="ACL">
+                ACL
+            </option>
+
+            <option value="NAT">
+                NAT
+            </option>
+
+            <option value="Wireless">
+                Wireless
+            </option>
+
+        </select>
+
+
+        <input
+            id="search"
+            placeholder="Search cases..."
+        >
+
     </div>
-    <div class="panel" style="margin-top:16px;">
-      <h3>AI vs. human agreement rate</h3>
-      <div class="agree-bar" id="agreeBar"></div>
-      <div class="legend">
-        <span><i style="background:var(--green)"></i>Accepted — AI diagnosis was correct as-is</span>
-        <span><i style="background:var(--blue)"></i>Edited — AI was partly right, human corrected details</span>
-        <span><i style="background:var(--red)"></i>Rejected — AI diagnosis was wrong</span>
-      </div>
+
+
+    <div class="case-layout">
+
+
+        <div class="card">
+
+            <div class="card-title">
+
+                <h3>
+                    Cases
+                </h3>
+
+                <p id="caseCount">
+                    0 cases
+                </p>
+
+            </div>
+
+
+            <div
+                class="case-list"
+                id="caseList"
+            ></div>
+
+        </div>
+
+
+        <div
+            class="details"
+            id="details"
+        >
+
+            <div class="detail-card">
+
+                <div class="detail-content">
+
+                    <h2>
+                        🔍 Select a case
+                    </h2>
+
+                    <p class="muted">
+                        Select a case from the left
+                        to begin troubleshooting.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
     </div>
-  </div>
+
 </section>
 
-<section id="log">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">03 / Responsible AI Log</div>
-      <h2>Cases where the AI needed correction</h2>
-      <p class="section-sub">Seeded with 6 pre-reviewed examples (minimum required: 5). Every
-      Edit or Reject you log in the Case Explorer above is appended here automatically.</p>
+
+<!-- =========================================
+     REVIEW
+========================================= -->
+
+<section id="review" class="section">
+
+    <div class="page-heading">
+
+        <h2>
+            Human Review
+        </h2>
+
+        <p>
+            Review every AI diagnosis before accepting
+            a recommended fix.
+        </p>
+
     </div>
-    <div id="logList"></div>
-  </div>
+
+
+    <div
+        class="card"
+        id="reviewList"
+    >
+
+        <div class="card-title">
+
+            <h3>
+                Review Queue
+            </h3>
+
+        </div>
+
+        <div
+            id="reviewContent"
+            style="padding:20px"
+        >
+        </div>
+
+    </div>
+
 </section>
 
-<section id="demo">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">04 / Demo Script</div>
-      <h2>5–10 minute walkthrough outline</h2>
-      <p class="section-sub">Use this as the shot list for the demo video deliverable.</p>
+
+<!-- =========================================
+     RESPONSIBLE AI
+========================================= -->
+
+<section id="rai" class="section">
+
+    <div class="page-heading">
+
+        <h2>
+            Responsible AI Log
+        </h2>
+
+        <p>
+            Human corrections and rejected AI diagnoses.
+        </p>
+
     </div>
-    <div class="panel">
-      <ol style="margin:0; padding-left:20px; color:var(--text-dim); font-size:14px; line-height:2;">
-        <li><b style="color:var(--text)">Show the broken lab</b> — pick one live case in Packet Tracer (e.g. C022 guest isolation) and demonstrate the symptom.</li>
-        <li><b style="color:var(--text)">Open the case in NetSage AI</b> — walk through the symptom, topology note, and show-command evidence in the Case Explorer.</li>
-        <li><b style="color:var(--text)">Run AI diagnosis</b> — click "Run AI Diagnosis" and read the JSON output: root cause, confidence, evidence, next command, fix steps.</li>
-        <li><b style="color:var(--text)">Run the rule checker</b> — show the deterministic findings panel and explain how it complements the AI (or catches what it misses).</li>
-        <li><b style="color:var(--text)">Human review</b> — mark Accept / Edit / Reject, add a reviewer note, and show the Responsible AI Log update live.</li>
-        <li><b style="color:var(--text)">Apply the fix &amp; verify</b> — apply the corrected fix in Packet Tracer and re-run the show command to prove the symptom is gone.</li>
-        <li><b style="color:var(--text)">Close on the dashboard</b> — show issue-type coverage and the AI–human agreement rate across all 32 cases.</li>
-      </ol>
-    </div>
-  </div>
+
+
+    <div id="raiContent"></div>
+
 </section>
+
 
 <footer>
-  <div class="wrap">
-    <span>NetSage AI — Applied AI + Network Troubleshooting · Team project deliverable</span>
-    <span>Cases in-memory for this demo session — export via the buttons in each panel for grading records.</span>
-  </div>
+
+    <span>
+        NetSage AI · Network Troubleshooting
+    </span>
+
+    <span>
+        Advisory only · Human review required
+    </span>
+
 </footer>
 
+
+</main>
+
+
+<!-- =========================================
+     REVIEW MODAL
+========================================= -->
+
+<div
+    class="modal"
+    id="modal"
+>
+
+    <div class="modal-box">
+
+        <button
+            class="close"
+            onclick="closeModal()"
+        >
+            ×
+        </button>
+
+
+        <h2>
+            Human Review
+        </h2>
+
+        <p>
+            Review the AI recommendation and
+            select a decision.
+        </p>
+
+
+        <div class="decisions">
+
+            <button
+                onclick="saveReview('Accepted')"
+            >
+                ✓ Accept
+            </button>
+
+            <button
+                onclick="saveReview('Edited')"
+            >
+                ✎ Edit
+            </button>
+
+            <button
+                onclick="saveReview('Rejected')"
+            >
+                ✕ Reject
+            </button>
+
+        </div>
+
+
+        <label>
+            Reviewer Note
+        </label>
+
+        <textarea
+            id="reviewNote"
+            placeholder="Explain your decision..."
+        ></textarea>
+
+    </div>
+
+</div>
+
+
 <script>
-/* ======================= DATA ======================= */
-const CASES = [{"case_id": "C001", "concept_tag": "VLAN", "osi_layer": "Layer 2", "severity": "Medium", "symptom": "PC1 in VLAN 10 cannot ping PC2, which is plugged into the same switch but has no link light.", "topology_note": "SW1 Fa0/2 (PC1, VLAN10) -- SW1 Fa0/3 (PC2, VLAN10). Both PCs configured 192.168.10.0/24.", "show_output": "SW1# show interfaces status\nPort      Name   Status       Vlan   Duplex  Speed Type\nFa0/2             connected    10     a-full  a-100 10/100BaseTX\nFa0/3             notconnect   10     auto    auto  10/100BaseTX", "expected_fault": "Fa0/3 is physically down / notconnect (bad cable or PC NIC off), not a VLAN issue.", "next_command": "show interfaces Fa0/3, physically check cable and PC NIC", "fix": "Reseat or replace the cable to PC2, confirm PC NIC is enabled, re-check 'show interfaces status'."}, {"case_id": "C002", "concept_tag": "VLAN", "osi_layer": "Layer 2", "severity": "High", "symptom": "PC3 gets a 169.254.x.x address. It is connected to Fa0/5 which should be in VLAN 20 with a DHCP relay.", "topology_note": "SW1 Fa0/5 (PC3) should be access VLAN 20. Trunk to R1 carries VLAN 20 subinterface with ip helper-address.", "show_output": "SW1# show interfaces Fa0/5 switchport\nName: Fa0/5\nSwitchport: Enabled\nAdministrative Mode: static access\nOperational Mode: static access\nAccess Mode VLAN: 1 (default)", "expected_fault": "Fa0/5 was never assigned to VLAN 20 (still default VLAN 1), so DHCP requests never reach the VLAN 20 relay/scope.", "next_command": "show vlan brief, then switchport access vlan 20 on Fa0/5", "fix": "Enter interface Fa0/5, run 'switchport access vlan 20', verify with 'show vlan brief' that Fa0/5 lists under VLAN 20."}, {"case_id": "C003", "concept_tag": "VLAN", "osi_layer": "Layer 2", "severity": "High", "symptom": "Two switches are connected by a trunk. Hosts in VLAN 30 on SW2 cannot reach hosts in VLAN 30 on SW1, but VLAN 10 works fine across the same link.", "topology_note": "SW1 Gi0/1 -- SW2 Gi0/1 trunk link carrying VLANs 10,20,30.", "show_output": "SW1# show interfaces trunk\nPort      Mode   Encapsulation  Status    Native vlan\nGi0/1     on     802.1q         trunking  1\n\nVlans allowed on trunk\nGi0/1     10,20", "expected_fault": "VLAN 30 is not in the trunk's allowed VLAN list on SW1, so VLAN 30 traffic is pruned at the trunk.", "next_command": "show interfaces trunk, switchport trunk allowed vlan add 30", "fix": "On Gi0/1, run 'switchport trunk allowed vlan add 30' on both switches, confirm VLAN 30 appears in 'show interfaces trunk' output."}, {"case_id": "C004", "concept_tag": "VLAN", "osi_layer": "Layer 2", "severity": "Medium", "symptom": "New VLAN 40 was created for a lab. Hosts on VLAN 40 can talk to each other but nothing else, and there is no VLAN 40 entry in the routing table.", "topology_note": "Router-on-a-stick: R1 Gi0/0.40 should provide the VLAN 40 gateway 192.168.40.1/24.", "show_output": "R1# show ip route\nGateway of last resort is not set\nC   192.168.10.0/24 is directly connected, GigabitEthernet0/0.10\nC   192.168.20.0/24 is directly connected, GigabitEthernet0/0.20", "expected_fault": "The Gi0/0.40 subinterface was never created (or is down), so VLAN 40 has no Layer 3 gateway.", "next_command": "show ip interface brief, show run interface Gi0/0.40", "fix": "Create subinterface Gi0/0.40 with 'encapsulation dot1Q 40', assign 192.168.40.1/24, 'no shutdown' the parent interface if needed."}, {"case_id": "C005", "concept_tag": "Gateway", "osi_layer": "Layer 3", "severity": "High", "symptom": "PC4 (192.168.10.15/24) cannot ping anything outside its own subnet, including its own default gateway.", "topology_note": "PC4 is meant to use gateway 192.168.10.1 (R1 Gi0/0).", "show_output": "C:\\>ipconfig\nIPv4 Address. . . . . . . . . . : 192.168.10.15\nSubnet Mask . . . . . . . . . . : 255.255.255.0\nDefault Gateway . . . . . . . . : 192.168.20.1", "expected_fault": "Default gateway is misconfigured on the PC (192.168.20.1 is not on PC4's subnet), so traffic to other subnets has nowhere to go.", "next_command": "ipconfig on PC, correct static IP config or DHCP scope default-router", "fix": "Set PC4's default gateway to 192.168.10.1, or if using DHCP correct the 'default-router' statement in the pool."}, {"case_id": "C006", "concept_tag": "Gateway", "osi_layer": "Layer 3", "severity": "Critical", "symptom": "Entire VLAN 10 lost connectivity to everything outside the subnet at the same time.", "topology_note": "R1 Gi0/0 is the VLAN 10 gateway 192.168.10.1/24.", "show_output": "R1# show ip interface brief\nInterface              IP-Address      OK? Method Status                Protocol\nGigabitEthernet0/0     192.168.10.1    YES manual administratively down down", "expected_fault": "Gi0/0 is administratively down, taking the entire VLAN 10 gateway offline.", "next_command": "show ip interface brief, no shutdown on Gi0/0", "fix": "Enter interface Gi0/0 and run 'no shutdown', re-verify status is 'up/up' in 'show ip interface brief'."}, {"case_id": "C007", "concept_tag": "Gateway", "osi_layer": "Layer 3", "severity": "Medium", "symptom": "Half the hosts in VLAN 20 can reach the internet, half cannot, though all show correct IP/mask/gateway.", "topology_note": "HSRP pair R1 (priority 110, active) and R2 (priority 100, standby) share virtual IP 192.168.20.1.", "show_output": "R2# show standby brief\nInterface   Grp  Pri P State    Active          Standby         Virtual IP\nGi0/1       20   100   Active   local           unknown         192.168.20.2", "expected_fault": "R2 shows itself Active with the wrong virtual IP (192.168.20.2 instead of .1) -- HSRP group misconfigured with a duplicate/incorrect virtual IP, splitting the gateway.", "next_command": "show standby brief on both routers, compare configured virtual IP", "fix": "Correct R2's HSRP virtual IP to 192.168.20.1 to match R1, confirm one router shows Active and the other Standby for the same VIP."}, {"case_id": "C008", "concept_tag": "Gateway", "osi_layer": "Layer 3", "severity": "High", "symptom": "A newly imaged PC cannot reach the gateway even though it has the right static IP configuration.", "topology_note": "PC5 192.168.30.20/24 on SW1 Fa0/8, gateway 192.168.30.1 on R1.", "show_output": "R1# show arp\nProtocol  Address          Age (min)  Hardware Addr   Type   Interface\nInternet  192.168.30.1             -   0011.aa22.bb33  ARPA   GigabitEthernet0/2\n(no entry for 192.168.30.20)", "expected_fault": "No ARP entry for PC5 ever arrives at R1, indicating the frame is not reaching the router at Layer 2 -- likely a bad cable, wrong VLAN on the access port, or the port is err-disabled.", "next_command": "show interfaces status for Fa0/8, show interfaces Fa0/8", "fix": "Check Fa0/8 status; if err-disabled run 'shutdown' then 'no shutdown', confirm VLAN 30 access mode, retest ARP."}, {"case_id": "C009", "concept_tag": "DHCP", "osi_layer": "Layer 3/7", "severity": "High", "symptom": "All PCs in VLAN 10 get 169.254.x.x addresses; VLAN 20 DHCP works fine on the same router.", "topology_note": "R1 runs local DHCP pools for VLAN10 and VLAN20.", "show_output": "R1# show ip dhcp pool\nPool VLAN20\n  Utilization mark (high/low)    : 100 / 0\n  Subnet size (first/last)       : 0 / 0\n  Total addresses                : 254\n  Leased addresses               : 12\n(no pool named VLAN10 listed)", "expected_fault": "The DHCP pool for VLAN 10 does not exist (was never created or was deleted), so VLAN 10 clients time out and self-assign APIPA addresses.", "next_command": "show ip dhcp pool, show run | section dhcp", "fix": "Create 'ip dhcp pool VLAN10' with correct network, default-router, and dns-server statements; exclude the gateway address."}, {"case_id": "C010", "concept_tag": "DHCP", "osi_layer": "Layer 3/7", "severity": "Medium", "symptom": "PCs in VLAN 30 receive an IP address but the default gateway field is blank, so they can't leave the subnet.", "topology_note": "R1 ip dhcp pool VLAN30, network 192.168.30.0/24.", "show_output": "R1# show run | section dhcp pool VLAN30\nip dhcp pool VLAN30\n network 192.168.30.0 255.255.255.0\n dns-server 8.8.8.8", "expected_fault": "The DHCP pool is missing the 'default-router' statement, so clients never receive a gateway address.", "next_command": "show run | section dhcp, add default-router line", "fix": "Add 'default-router 192.168.30.1' to pool VLAN30, release/renew a test client to confirm the gateway is handed out."}, {"case_id": "C011", "concept_tag": "DHCP", "osi_layer": "Layer 3/7", "severity": "Medium", "symptom": "Two PCs on VLAN 10 intermittently lose network access and event logs show an IP conflict warning.", "topology_note": "DHCP pool VLAN10 network 192.168.10.0/24; PC-A is statically set to 192.168.10.50.", "show_output": "R1# show ip dhcp conflict\nIP address       Detection method   Detection time\n192.168.10.50     Ping                Aug 20 2026 09:14", "expected_fault": "A statically assigned address (192.168.10.50) falls inside the DHCP pool's range and was also leased to another host, creating a duplicate IP conflict.", "next_command": "show ip dhcp conflict, show ip dhcp pool", "fix": "Add 'ip dhcp excluded-address 192.168.10.50 192.168.10.50' (or move the static host outside the pool range) and clear the conflict."}, {"case_id": "C012", "concept_tag": "DHCP", "osi_layer": "Layer 3/7", "severity": "High", "symptom": "Remote VLAN 50 on a different router (R2) cannot get DHCP addresses, though R1 hosts the central DHCP server for all VLANs.", "topology_note": "R2 Gi0/1 is VLAN 50 gateway 192.168.50.1; DHCP server lives on R1 at 192.168.1.10.", "show_output": "R2# show run interface Gi0/1\ninterface GigabitEthernet0/1\n ip address 192.168.50.1 255.255.255.0\n(no ip helper-address configured)", "expected_fault": "Gi0/1 on R2 has no 'ip helper-address', so DHCP broadcasts from VLAN 50 are never relayed to the remote DHCP server on R1.", "next_command": "show run interface Gi0/1, add ip helper-address", "fix": "Add 'ip helper-address 192.168.1.10' under Gi0/1 on R2, verify a test client receives a lease."}, {"case_id": "C013", "concept_tag": "DNS", "osi_layer": "Layer 7", "severity": "Medium", "symptom": "PC can ping the server's IP address directly but 'ping server.netsage.local' fails with 'Ping request could not find host'.", "topology_note": "Internal DNS server at 192.168.1.53 hosts the netsage.local zone.", "show_output": "C:\\>ipconfig /all\nDNS Servers . . . . . . . . . . : 8.8.8.8", "expected_fault": "The PC is pointed at a public DNS server that has no record for the internal netsage.local zone, instead of the internal DNS server.", "next_command": "ipconfig /all, nslookup server.netsage.local 192.168.1.53", "fix": "Set the client's DNS server (static or via DHCP option) to 192.168.1.53, retest name resolution."}, {"case_id": "C014", "concept_tag": "DNS", "osi_layer": "Layer 7", "severity": "Medium", "symptom": "Web browsing to internal sites by name is very slow (10-15s) before finally succeeding.", "topology_note": "DHCP option hands out two DNS servers: primary 192.168.1.53, secondary 4.2.2.2.", "show_output": "C:\\>nslookup server.netsage.local\nServer:  UnKnown\nAddress:  4.2.2.2\n*** UnKnown can't find server.netsage.local: Non-existent domain", "expected_fault": "Client is falling through to the secondary public DNS server, which has no record, causing timeout delay before eventually retrying the primary.", "next_command": "nslookup against each configured DNS server individually, check reachability to 192.168.1.53", "fix": "Confirm primary DNS 192.168.1.53 is reachable and responding first; remove or correct the secondary entry so it isn't the one answering."}, {"case_id": "C015", "concept_tag": "DNS", "osi_layer": "Layer 7", "severity": "Low", "symptom": "'nslookup mail.netsage.local' resolves to the wrong IP address (an old server that was decommissioned).", "topology_note": "DNS server 192.168.1.53 hosts the A record for mail.netsage.local.", "show_output": "> nslookup mail.netsage.local 192.168.1.53\nServer:  dns1.netsage.local\nAddress:  192.168.1.53\nName:    mail.netsage.local\nAddress:  192.168.1.77   (old decommissioned host)", "expected_fault": "Stale A record on the authoritative DNS server was never updated after the mail server was re-IP'd.", "next_command": "show dns zone records, verify current server IP", "fix": "Update the A record for mail.netsage.local to the current server IP on the DNS server, flush client resolver caches."}, {"case_id": "C016", "concept_tag": "DNS", "osi_layer": "Layer 7", "severity": "High", "symptom": "No host in VLAN 20 can resolve any name, internal or external, though gateway and internet-by-IP both work.", "topology_note": "DHCP pool VLAN20 should hand out dns-server 192.168.1.53.", "show_output": "R1# show run | section dhcp pool VLAN20\nip dhcp pool VLAN20\n network 192.168.20.0 255.255.255.0\n default-router 192.168.20.1\n(no dns-server line present)", "expected_fault": "The VLAN20 DHCP pool has no 'dns-server' statement, so clients never learn any resolver address.", "next_command": "show run | section dhcp, add dns-server line", "fix": "Add 'dns-server 192.168.1.53' to pool VLAN20, renew client leases and confirm nslookup works."}, {"case_id": "C017", "concept_tag": "Routing", "osi_layer": "Layer 3", "severity": "High", "symptom": "VLAN 10 hosts can reach VLAN 20 but cannot reach the 192.168.100.0/24 server subnet on R2.", "topology_note": "R1 (192.168.10.0/24, 192.168.20.0/24) -- R2 (192.168.100.0/24) connected via 10.0.0.0/30 link.", "show_output": "R1# show ip route\nC  192.168.10.0/24 is directly connected, Gi0/0\nC  192.168.20.0/24 is directly connected, Gi0/1\nC  10.0.0.0/30 is directly connected, Gi0/2\n(no route to 192.168.100.0/24)", "expected_fault": "R1 has no route (static or dynamic) to reach the remote 192.168.100.0/24 network on R2.", "next_command": "show ip route, show ip protocols", "fix": "Add 'ip route 192.168.100.0 255.255.255.0 10.0.0.2' on R1 (or enable/verify the routing protocol advertising it), confirm route appears."}, {"case_id": "C018", "concept_tag": "Routing", "osi_layer": "Layer 3", "severity": "Critical", "symptom": "Two routers running OSPF are not forming a neighbor relationship; the routing table on each only shows locally connected networks.", "topology_note": "R1 Gi0/2 10.0.0.1/30 and R2 Gi0/0 10.0.0.2/30, both configured for OSPF area 0.", "show_output": "R1# show ip ospf neighbor\n(no output)\nR1# show run | section router ospf\nrouter ospf 1\n network 10.0.0.0 0.0.0.3 area 0\nR2# show run | section router ospf\nrouter ospf 1\n network 10.0.0.0 0.0.0.3 area 1", "expected_fault": "OSPF area mismatch: R1 advertises the link in area 0, R2 advertises it in area 1, so neighbors never form.", "next_command": "show ip ospf neighbor, show run | section router ospf on both routers", "fix": "Change R2's network statement to 'area 0' to match R1, confirm 'show ip ospf neighbor' shows FULL state."}, {"case_id": "C019", "concept_tag": "Routing", "osi_layer": "Layer 3", "severity": "Medium", "symptom": "Traffic from VLAN 10 to the internet works, but return traffic sometimes takes an unexpectedly long path and packets are occasionally dropped.", "topology_note": "Dual uplinks from R1 to ISP-A and ISP-B with static default routes to each.", "show_output": "R1# show ip route static\nS*   0.0.0.0/0 [1/0] via 203.0.113.1\nS*   0.0.0.0/0 [1/0] via 198.51.100.1", "expected_fault": "Two equal-administrative-distance default routes are both active without proper floating (backup) configuration, causing load-balanced/asymmetric routing across links with different real capacity.", "next_command": "show ip route static, ping/traceroute to confirm path, check AD values", "fix": "Set one default route as primary and the other as a floating static route with a higher administrative distance (e.g. 'ip route 0.0.0.0 0.0.0.0 198.51.100.1 10')."}, {"case_id": "C020", "concept_tag": "Routing", "osi_layer": "Layer 3", "severity": "High", "symptom": "After adding a new branch router R3, hosts behind R3 cannot reach the head-office server subnet, but R3 can ping R1 directly.", "topology_note": "R3 connects to R1 over a serial WAN link; EIGRP AS 100 runs across the network.", "show_output": "R3# show ip protocols\nRouting Protocol is \"eigrp 100\"\n  Automatic Summarization: enabled", "expected_fault": "EIGRP auto-summarization is enabled on R3, causing its subnetted branch networks to be summarized incorrectly at the classful boundary, breaking reachability to specific subnets.", "next_command": "show ip protocols, show ip route eigrp", "fix": "Run 'no auto-summary' under 'router eigrp 100' on R3 (and other routers), confirm specific subnets reappear in the routing table."}, {"case_id": "C021", "concept_tag": "ACL", "osi_layer": "Layer 3/4", "severity": "High", "symptom": "PC in VLAN 30 gets an IP and can ping its gateway, but cannot reach the file server in VLAN 30 (via inter-VLAN routing) despite a correct route existing.", "topology_note": "R1 Gi0/0.30 subinterface has an inbound ACL applied for security filtering.", "show_output": "R1# show access-lists\nExtended IP access list VLAN30_IN\n    10 deny ip any host 192.168.30.50\n    20 permit ip any any (120 matches)", "expected_fault": "ACL entry 10 explicitly denies traffic to the file server (192.168.30.50) before the permit-any statement is reached.", "next_command": "show access-lists, show run interface Gi0/0.30", "fix": "Remove or correct the deny line for 192.168.30.50 (or add a specific permit above it), reapply the ACL and retest."}, {"case_id": "C022", "concept_tag": "ACL", "osi_layer": "Layer 3/4", "severity": "Medium", "symptom": "Guest Wi-Fi users on VLAN 99 can reach the internal file server (192.168.1.50), which violates the intended guest isolation policy.", "topology_note": "R1 Gi0/1.99 (guest VLAN) is supposed to carry an ACL blocking access to internal subnets.", "show_output": "R1# show run interface GigabitEthernet0/1.99\ninterface GigabitEthernet0/1.99\n encapsulation dot1Q 99\n ip address 192.168.99.1 255.255.255.0\n(no access-group applied)", "expected_fault": "No ACL is applied to the guest subinterface at all, so the isolation policy was never enforced -- a security/guest-isolation failure.", "next_command": "show run interface Gi0/1.99, show access-lists", "fix": "Create ACL denying guest subnet to internal subnets (permit internet only), apply with 'ip access-group GUEST_ISOLATION in' on Gi0/1.99."}, {"case_id": "C023", "concept_tag": "ACL", "osi_layer": "Layer 3/4", "severity": "High", "symptom": "Remote management via SSH to R1 works from the admin subnet but external users unexpectedly can also SSH in from the internet-facing interface.", "topology_note": "R1 has an ACL meant to restrict VTY access to the admin subnet 192.168.1.0/24 only.", "show_output": "R1# show run | section line vty\nline vty 0 4\n transport input ssh\n(no access-class applied)", "expected_fault": "The VTY lines have no 'access-class' statement referencing the management ACL, so the restriction is never enforced even though the ACL itself exists.", "next_command": "show run | section line vty, show access-lists", "fix": "Add 'access-class MGMT_ONLY in' under 'line vty 0 4', confirm only 192.168.1.0/24 can establish SSH sessions."}, {"case_id": "C024", "concept_tag": "ACL", "osi_layer": "Layer 3/4", "severity": "Medium", "symptom": "After adding a new rule to an existing numbered ACL, legitimate HTTP traffic from VLAN 10 to the web server stopped working entirely.", "topology_note": "Standard access-list 10 was reused (standard ACLs only match source, not intended for this filtering job).", "show_output": "R1# show access-lists\nStandard IP access list 10\n    10 deny 192.168.10.0 0.0.0.255\n    20 permit any", "expected_fault": "A standard ACL was applied where an extended ACL was needed; it denies the entire VLAN10 source subnet outright with no port/destination granularity, blocking all traffic rather than just the intended flow.", "next_command": "show access-lists, show run interface (where applied)", "fix": "Replace with an extended numbered/named ACL that matches specific source, destination, and port (e.g. permit tcp 192.168.10.0 0.0.0.255 host 192.168.1.80 eq 80), remove the overly broad deny."}, {"case_id": "C025", "concept_tag": "NAT", "osi_layer": "Layer 3", "severity": "High", "symptom": "Internal PCs can ping each other and the router, but cannot reach any internet host by IP or name.", "topology_note": "R1 Gi0/0 (inside, 192.168.10.1) and Gi0/1 (outside, public IP from ISP) should run PAT.", "show_output": "R1# show ip nat translations\n(no translations present)\nR1# show run | include ip nat\nip nat inside source list 1 interface GigabitEthernet0/1 overload", "expected_fault": "The NAT rule exists but the 'ip nat inside' / 'ip nat outside' commands were never applied on Gi0/0 and Gi0/1, so no interface is participating in NAT.", "next_command": "show ip nat statistics, show run interface Gi0/0, show run interface Gi0/1", "fix": "Apply 'ip nat inside' on Gi0/0 and 'ip nat outside' on Gi0/1, retest and confirm entries appear in 'show ip nat translations'."}, {"case_id": "C026", "concept_tag": "NAT", "osi_layer": "Layer 3", "severity": "Medium", "symptom": "Internet access works for VLAN 10 but a newly added VLAN 40 subnet cannot reach the internet, though its gateway and routing look fine.", "topology_note": "NAT uses access-list 1 to define which internal networks are translated.", "show_output": "R1# show access-lists 1\nStandard IP access list 1\n    10 permit 192.168.10.0, wildcard bits 0.0.0.255", "expected_fault": "Access-list 1 (the NAT source list) only permits the VLAN 10 subnet; VLAN 40 (192.168.40.0/24) was never added, so its traffic is not translated and dropped at the internet edge.", "next_command": "show access-lists 1, show ip nat statistics", "fix": "Add 'access-list 1 permit 192.168.40.0 0.0.0.255' to include VLAN 40 in the NAT source list, verify translations appear."}, {"case_id": "C027", "concept_tag": "NAT", "osi_layer": "Layer 3/4", "severity": "High", "symptom": "External users cannot reach the internally-hosted web server on its public IP, even though the server itself has internet access outbound.", "topology_note": "Static NAT / port forward should map public IP port 80 to internal server 192.168.1.80 port 80.", "show_output": "R1# show run | include ip nat inside source static\nip nat inside source static tcp 192.168.1.80 8080 203.0.113.10 80 extendable", "expected_fault": "The static NAT rule forwards to internal port 8080, but the web server is actually listening on port 80 -- a port mismatch in the port-forwarding rule.", "next_command": "show run | include ip nat inside source static, verify server's actual listening port", "fix": "Correct the rule to 'ip nat inside source static tcp 192.168.1.80 80 203.0.113.10 80 extendable' to match the server's real port."}, {"case_id": "C028", "concept_tag": "NAT", "osi_layer": "Layer 3", "severity": "Medium", "symptom": "Internet access from VLAN 10 works for a while after a reboot, then stops for all internal users at the same time until the router is reloaded.", "topology_note": "NAT overload (PAT) is used for all internal traffic through the single outside interface.", "show_output": "R1# show ip nat statistics\nTotal active translations: 4092 (4092 static, 0 dynamic; 4092 extended)\nOutside interfaces: GigabitEthernet0/1", "expected_fault": "The NAT translation table is exhausted (thousands of stale entries never timing out), so new connections cannot get a translation until entries expire or the table is cleared.", "next_command": "show ip nat statistics, show ip nat translations", "fix": "Clear stale entries with 'clear ip nat translation *', consider tuning NAT timeout values ('ip nat translation timeout') to expire idle sessions sooner."}, {"case_id": "C029", "concept_tag": "Wireless", "osi_layer": "Layer 1/2", "severity": "Medium", "symptom": "Laptop shows the correct SSID in range but authentication fails every time with 'incorrect password' even though the password is confirmed correct.", "topology_note": "WLAN 'NetSage-Staff' configured on the WLC with WPA2-PSK.", "show_output": "WLC# show wlan 1\nWLAN Identifier.................................. 1\nSecurity\n  802.11 Authentication:......................... Open System\n  WPA2 PSK.........................................Disabled", "expected_fault": "WPA2-PSK security is disabled on the WLAN profile (still Open System), so the client's PSK is never actually validated the way the client expects, causing a handshake/association mismatch.", "next_command": "show wlan <id>, verify security settings match client expectation", "fix": "Enable WPA2-PSK on the WLAN with the correct passphrase, re-associate a test client to confirm successful authentication."}, {"case_id": "C030", "concept_tag": "Wireless", "osi_layer": "Layer 1", "severity": "Low", "symptom": "Users near the far end of the warehouse report the Wi-Fi signal is very weak or drops, though it's strong near the AP.", "topology_note": "Single AP covering a large warehouse floor, mounted at low height near one corner.", "show_output": "AP# show controller dot11Radio 0\nRadio Power Level: 100% (max)\nAntenna Gain: 2 dBi (internal, omni)", "expected_fault": "Physical/RF coverage gap due to AP placement and low-gain antenna for the building size -- a Layer 1 coverage design issue, not a configuration error.", "next_command": "site survey / heatmap, show controller dot11Radio 0", "fix": "Reposition the AP toward the center of the coverage area, raise mounting height, or add a second AP to remove the coverage gap."}, {"case_id": "C031", "concept_tag": "Wireless", "osi_layer": "Layer 2/3", "severity": "High", "symptom": "Wireless clients associate to the AP successfully (get a signal, show 'connected') but never receive an IP address.", "topology_note": "WLAN 'NetSage-Staff' is mapped to VLAN 20 on the WLC, trunked to the switch.", "show_output": "SW1# show interfaces trunk\nPort      Mode   Encapsulation  Status    Native vlan\nGi0/2     on     802.1q         trunking  1\n\nVlans allowed on trunk\nGi0/2     10,30", "expected_fault": "VLAN 20 (the wireless client VLAN) is not permitted on the trunk between the WLC/AP switch port and the rest of the network, so DHCP requests never leave the access layer.", "next_command": "show interfaces trunk, switchport trunk allowed vlan add 20", "fix": "Add VLAN 20 to the trunk's allowed VLAN list on Gi0/2, retest client DHCP."}, {"case_id": "C032", "concept_tag": "Wireless", "osi_layer": "Layer 2", "severity": "Medium", "symptom": "Guest wireless users can see and print to an internal network printer that should only be reachable from the staff VLAN.", "topology_note": "Guest WLAN mapped to VLAN 99; staff printer lives in VLAN 10 (192.168.10.90).", "show_output": "R1# show access-lists\nExtended IP access list GUEST_ISOLATION\n    10 permit ip 192.168.99.0 0.0.0.255 any (installed but not applied)\nR1# show run interface Gi0/1.99\ninterface GigabitEthernet0/1.99\n(no ip access-group applied)", "expected_fault": "Guest isolation ACL exists but was never applied to the guest subinterface, and its single rule permits all traffic anyway -- both a missing application and an inverted rule logic bug.", "next_command": "show access-lists, show run interface Gi0/1.99", "fix": "Rewrite the ACL to deny guest-to-internal subnets and permit only internet-bound traffic, then apply it with 'ip access-group GUEST_ISOLATION in' on Gi0/1.99."}];
-const AI_DIAGNOSES = [{"case_id": "C001", "is_correct": false, "root_cause": "PC1 and PC2 are in different VLANs, causing the connectivity failure.", "osi_layer": "Layer 2", "concept_tag": "VLAN", "confidence": "Medium", "evidence": "Both ports are configured for VLAN 10 in 'show interfaces status', but the AI assumed a VLAN mismatch without checking the Status column.", "next_command": "show vlan brief", "fix_steps": ["Move PC2's port to VLAN 10", "Verify with show vlan brief"], "reviewer_note": "AI misread the evidence - both ports already show VLAN 10 in the output. The actual Status column clearly shows Fa0/3 as 'notconnect', which is a physical layer issue, not a VLAN assignment issue. Corrected root cause to bad cable / NIC.", "corrected": {"root_cause": "Fa0/3 is physically down / notconnect (bad cable or PC NIC off), not a VLAN issue.", "osi_layer": "Layer 2", "concept_tag": "VLAN", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show interfaces Fa0/3, physically check cable and PC NIC", "fix_steps": ["Reseat or replace the cable to PC2", "confirm PC NIC is enabled", "re-check 'show interfaces status'."]}}, {"case_id": "C002", "is_correct": true, "root_cause": "Fa0/5 was never assigned to VLAN 20 (still default VLAN 1), so DHCP requests never reach the VLAN 20 relay/scope.", "osi_layer": "Layer 2", "concept_tag": "VLAN", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show vlan brief, then switchport access vlan 20 on Fa0/5", "fix_steps": ["Enter interface Fa0/5", "run 'switchport access vlan 20'", "verify with 'show vlan brief' that Fa0/5 lists under VLAN 20."], "reviewer_note": "", "corrected": null}, {"case_id": "C003", "is_correct": true, "root_cause": "VLAN 30 is not in the trunk's allowed VLAN list on SW1, so VLAN 30 traffic is pruned at the trunk.", "osi_layer": "Layer 2", "concept_tag": "VLAN", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show interfaces trunk, switchport trunk allowed vlan add 30", "fix_steps": ["On Gi0/1", "run 'switchport trunk allowed vlan add 30' on both switches", "confirm VLAN 30 appears in 'show interfaces trunk' output."], "reviewer_note": "", "corrected": null}, {"case_id": "C004", "is_correct": true, "root_cause": "The Gi0/0.40 subinterface was never created (or is down), so VLAN 40 has no Layer 3 gateway.", "osi_layer": "Layer 2", "concept_tag": "VLAN", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip interface brief, show run interface Gi0/0.40", "fix_steps": ["Create subinterface Gi0/0.40 with 'encapsulation dot1Q 40'", "assign 192.168.40.1/24", "'no shutdown' the parent interface if needed."], "reviewer_note": "", "corrected": null}, {"case_id": "C005", "is_correct": true, "root_cause": "Default gateway is misconfigured on the PC (192.168.20.1 is not on PC4's subnet), so traffic to other subnets has nowhere to go.", "osi_layer": "Layer 3", "concept_tag": "Gateway", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "ipconfig on PC, correct static IP config or DHCP scope default-router", "fix_steps": ["Set PC4's default gateway to 192.168.10.1", "or if using DHCP correct the 'default-router' statement in the pool."], "reviewer_note": "", "corrected": null}, {"case_id": "C006", "is_correct": true, "root_cause": "Gi0/0 is administratively down, taking the entire VLAN 10 gateway offline.", "osi_layer": "Layer 3", "concept_tag": "Gateway", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip interface brief, no shutdown on Gi0/0", "fix_steps": ["Enter interface Gi0/0 and run 'no shutdown'", "re-verify status is 'up/up' in 'show ip interface brief'."], "reviewer_note": "", "corrected": null}, {"case_id": "C007", "is_correct": true, "root_cause": "R2 shows itself Active with the wrong virtual IP (192.168.20.2 instead of .1) -- HSRP group misconfigured with a duplicate/incorrect virtual IP, splitting the gateway.", "osi_layer": "Layer 3", "concept_tag": "Gateway", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show standby brief on both routers, compare configured virtual IP", "fix_steps": ["Correct R2's HSRP virtual IP to 192.168.20.1 to match R1", "confirm one router shows Active and the other Standby for the same VIP."], "reviewer_note": "", "corrected": null}, {"case_id": "C008", "is_correct": true, "root_cause": "No ARP entry for PC5 ever arrives at R1, indicating the frame is not reaching the router at Layer 2 -- likely a bad cable, wrong VLAN on the access port, or the port is err-disabled.", "osi_layer": "Layer 3", "concept_tag": "Gateway", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show interfaces status for Fa0/8, show interfaces Fa0/8", "fix_steps": ["Check Fa0/8 status; if err-disabled run 'shutdown' then 'no shutdown'", "confirm VLAN 30 access mode", "retest ARP."], "reviewer_note": "", "corrected": null}, {"case_id": "C009", "is_correct": false, "root_cause": "DNS server is unreachable from VLAN 10, preventing address configuration.", "osi_layer": "Layer 7", "concept_tag": "DHCP", "confidence": "Low", "evidence": "Clients show 169.254.x.x addresses, which the AI associated with DNS failure.", "next_command": "nslookup", "fix_steps": ["Check DNS server reachability", "Restart DNS service"], "reviewer_note": "169.254.x.x is APIPA and specifically indicates a failed DHCP lease, not a DNS problem - DNS only matters after a device already has an IP. AI conflated two unrelated Layer 3/7 services. Corrected to missing DHCP pool for VLAN10, confirmed by 'show ip dhcp pool' listing only VLAN20.", "corrected": {"root_cause": "The DHCP pool for VLAN 10 does not exist (was never created or was deleted), so VLAN 10 clients time out and self-assign APIPA addresses.", "osi_layer": "Layer 3/7", "concept_tag": "DHCP", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip dhcp pool, show run | section dhcp", "fix_steps": ["Create 'ip dhcp pool VLAN10' with correct network", "default-router", "and dns-server statements; exclude the gateway address."]}}, {"case_id": "C010", "is_correct": true, "root_cause": "The DHCP pool is missing the 'default-router' statement, so clients never receive a gateway address.", "osi_layer": "Layer 3/7", "concept_tag": "DHCP", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show run | section dhcp, add default-router line", "fix_steps": ["Add 'default-router 192.168.30.1' to pool VLAN30", "release/renew a test client to confirm the gateway is handed out."], "reviewer_note": "", "corrected": null}, {"case_id": "C011", "is_correct": true, "root_cause": "A statically assigned address (192.168.10.50) falls inside the DHCP pool's range and was also leased to another host, creating a duplicate IP conflict.", "osi_layer": "Layer 3/7", "concept_tag": "DHCP", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip dhcp conflict, show ip dhcp pool", "fix_steps": ["Add 'ip dhcp excluded-address 192.168.10.50 192.168.10.50' (or move the static host", "outside the pool range) and clear the conflict."], "reviewer_note": "", "corrected": null}, {"case_id": "C012", "is_correct": true, "root_cause": "Gi0/1 on R2 has no 'ip helper-address', so DHCP broadcasts from VLAN 50 are never relayed to the remote DHCP server on R1.", "osi_layer": "Layer 3/7", "concept_tag": "DHCP", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show run interface Gi0/1, add ip helper-address", "fix_steps": ["Add 'ip helper-address 192.168.1.10' under Gi0/1 on R2", "verify a test client receives a lease."], "reviewer_note": "", "corrected": null}, {"case_id": "C013", "is_correct": true, "root_cause": "The PC is pointed at a public DNS server that has no record for the internal netsage.local zone, instead of the internal DNS server.", "osi_layer": "Layer 7", "concept_tag": "DNS", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "ipconfig /all, nslookup server.netsage.local 192.168.1.53", "fix_steps": ["Set the client's DNS server (static or via DHCP option) to 192.168.1.53", "retest name resolution."], "reviewer_note": "", "corrected": null}, {"case_id": "C014", "is_correct": true, "root_cause": "Client is falling through to the secondary public DNS server, which has no record, causing timeout delay before eventually retrying the primary.", "osi_layer": "Layer 7", "concept_tag": "DNS", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "nslookup against each configured DNS server individually, check reachability to 192.168.1.53", "fix_steps": ["Confirm primary DNS 192.168.1.53 is reachable and responding first; remove or correct the", "secondary entry so it isn't the one answering."], "reviewer_note": "", "corrected": null}, {"case_id": "C015", "is_correct": true, "root_cause": "Stale A record on the authoritative DNS server was never updated after the mail server was re-IP'd.", "osi_layer": "Layer 7", "concept_tag": "DNS", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show dns zone records, verify current server IP", "fix_steps": ["Update the A record for mail.netsage.local to the current server IP on the DNS server", "flush client resolver caches."], "reviewer_note": "", "corrected": null}, {"case_id": "C016", "is_correct": true, "root_cause": "The VLAN20 DHCP pool has no 'dns-server' statement, so clients never learn any resolver address.", "osi_layer": "Layer 7", "concept_tag": "DNS", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show run | section dhcp, add dns-server line", "fix_steps": ["Add 'dns-server 192.168.1.53' to pool VLAN20", "renew client leases and confirm nslookup works."], "reviewer_note": "", "corrected": null}, {"case_id": "C017", "is_correct": false, "root_cause": "An ACL on R1 is blocking traffic to the 192.168.100.0/24 server subnet.", "osi_layer": "Layer 3/4", "concept_tag": "Routing", "confidence": "Medium", "evidence": "Traffic fails to reach the remote subnet; AI assumed a filtering rule was responsible.", "next_command": "show access-lists", "fix_steps": ["Locate the ACL applied to the outbound interface", "Remove the deny statement"], "reviewer_note": "No ACL was shown or referenced anywhere in the evidence provided - the AI invented a plausible-sounding cause instead of admitting the evidence didn't support it. 'show ip route' plainly shows no entry at all for 192.168.100.0/24. Corrected to missing static/dynamic route on R1.", "corrected": {"root_cause": "R1 has no route (static or dynamic) to reach the remote 192.168.100.0/24 network on R2.", "osi_layer": "Layer 3", "concept_tag": "Routing", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip route, show ip protocols", "fix_steps": ["Add 'ip route 192.168.100.0 255.255.255.0 10.0.0.2' on R1 (or enable/verify the routing protocol advertising it)", "confirm route appears."]}}, {"case_id": "C018", "is_correct": true, "root_cause": "OSPF area mismatch: R1 advertises the link in area 0, R2 advertises it in area 1, so neighbors never form.", "osi_layer": "Layer 3", "concept_tag": "Routing", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip ospf neighbor, show run | section router ospf on both routers", "fix_steps": ["Change R2's network statement to 'area 0' to match R1", "confirm 'show ip ospf neighbor' shows FULL state."], "reviewer_note": "", "corrected": null}, {"case_id": "C019", "is_correct": true, "root_cause": "Two equal-administrative-distance default routes are both active without proper floating (backup) configuration, causing load-balanced/asymmetric routing across links with different real capacity.", "osi_layer": "Layer 3", "concept_tag": "Routing", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip route static, ping/traceroute to confirm path, check AD values", "fix_steps": ["Set one default route as primary and the other as a floating static route with a higher", "administrative distance (e.g. 'ip route 0.0.0.0 0.0.0.0 198.51.100.1 10')."], "reviewer_note": "", "corrected": null}, {"case_id": "C020", "is_correct": true, "root_cause": "EIGRP auto-summarization is enabled on R3, causing its subnetted branch networks to be summarized incorrectly at the classful boundary, breaking reachability to specific subnets.", "osi_layer": "Layer 3", "concept_tag": "Routing", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip protocols, show ip route eigrp", "fix_steps": ["Run 'no auto-summary' under 'router eigrp 100' on R3 (and other routers)", "confirm specific subnets reappear in the routing table."], "reviewer_note": "", "corrected": null}, {"case_id": "C021", "is_correct": true, "root_cause": "ACL entry 10 explicitly denies traffic to the file server (192.168.30.50) before the permit-any statement is reached.", "osi_layer": "Layer 3/4", "concept_tag": "ACL", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show access-lists, show run interface Gi0/0.30", "fix_steps": ["Remove or correct the deny line for 192.168.30.50 (or add a specific permit above it)", "reapply the ACL and retest."], "reviewer_note": "", "corrected": null}, {"case_id": "C022", "is_correct": false, "root_cause": "Guest VLAN 99 is configured correctly; no fault found in the provided output.", "osi_layer": "Layer 2", "concept_tag": "ACL", "confidence": "Low", "evidence": "Subinterface configuration looks standard for a routed VLAN.", "next_command": "show running-config", "fix_steps": ["No action needed"], "reviewer_note": "This is a security-relevant miss, not just a technical one: the AI treated 'no errors visible' as 'no problem', but the whole point of the case is that guest isolation is a security POLICY that must be actively enforced. The output explicitly shows no access-group applied on the guest subinterface, which is the fault. Escalated and corrected to missing guest-isolation ACL.", "corrected": {"root_cause": "No ACL is applied to the guest subinterface at all, so the isolation policy was never enforced -- a security/guest-isolation failure.", "osi_layer": "Layer 3/4", "concept_tag": "ACL", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show run interface Gi0/1.99, show access-lists", "fix_steps": ["Create ACL denying guest subnet to internal subnets (permit internet only)", "apply with 'ip access-group GUEST_ISOLATION in' on Gi0/1.99."]}}, {"case_id": "C023", "is_correct": true, "root_cause": "The VTY lines have no 'access-class' statement referencing the management ACL, so the restriction is never enforced even though the ACL itself exists.", "osi_layer": "Layer 3/4", "concept_tag": "ACL", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show run | section line vty, show access-lists", "fix_steps": ["Add 'access-class MGMT_ONLY in' under 'line vty 0 4'", "confirm only 192.168.1.0/24 can establish SSH sessions."], "reviewer_note": "", "corrected": null}, {"case_id": "C024", "is_correct": true, "root_cause": "A standard ACL was applied where an extended ACL was needed; it denies the entire VLAN10 source subnet outright with no port/destination granularity, blocking all traffic rather than just the intended flow.", "osi_layer": "Layer 3/4", "concept_tag": "ACL", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show access-lists, show run interface (where applied)", "fix_steps": ["Replace with an extended numbered/named ACL that matches specific source", "destination", "and port (e.g. permit tcp 192.168.10.0 0.0.0.255 host 192.168.1.80 eq 80)", "remove the overly broad deny."], "reviewer_note": "", "corrected": null}, {"case_id": "C025", "is_correct": true, "root_cause": "The NAT rule exists but the 'ip nat inside' / 'ip nat outside' commands were never applied on Gi0/0 and Gi0/1, so no interface is participating in NAT.", "osi_layer": "Layer 3", "concept_tag": "NAT", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip nat statistics, show run interface Gi0/0, show run interface Gi0/1", "fix_steps": ["Apply 'ip nat inside' on Gi0/0 and 'ip nat outside' on Gi0/1", "retest and confirm entries appear in 'show ip nat translations'."], "reviewer_note": "", "corrected": null}, {"case_id": "C026", "is_correct": true, "root_cause": "Access-list 1 (the NAT source list) only permits the VLAN 10 subnet; VLAN 40 (192.168.40.0/24) was never added, so its traffic is not translated and dropped at the internet edge.", "osi_layer": "Layer 3", "concept_tag": "NAT", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show access-lists 1, show ip nat statistics", "fix_steps": ["Add 'access-list 1 permit 192.168.40.0 0.0.0.255' to include VLAN 40 in the NAT source list", "verify translations appear."], "reviewer_note": "", "corrected": null}, {"case_id": "C027", "is_correct": false, "root_cause": "A firewall or ACL upstream of R1 is blocking inbound port 80 traffic from the internet.", "osi_layer": "Layer 3/4", "concept_tag": "NAT", "confidence": "Medium", "evidence": "External users cannot reach the web server on port 80; AI assumed an upstream security device was filtering it.", "next_command": "show access-lists", "fix_steps": ["Check upstream firewall rules for port 80", "Open port 80 if blocked"], "reviewer_note": "There is no upstream firewall in this topology, and the AI did not use the actual NAT rule shown in the evidence, which reveals the real problem in one line: the static NAT forwards to internal port 8080 while the server listens on port 80. Corrected to a NAT port-forwarding mismatch - a much simpler, evidence-backed fix.", "corrected": {"root_cause": "The static NAT rule forwards to internal port 8080, but the web server is actually listening on port 80 -- a port mismatch in the port-forwarding rule.", "osi_layer": "Layer 3/4", "concept_tag": "NAT", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show run | include ip nat inside source static, verify server's actual listening port", "fix_steps": ["Correct the rule to 'ip nat inside source static tcp 192.168.1.80 80 203.0.113.10 80", "extendable' to match the server's real port."]}}, {"case_id": "C028", "is_correct": true, "root_cause": "The NAT translation table is exhausted (thousands of stale entries never timing out), so new connections cannot get a translation until entries expire or the table is cleared.", "osi_layer": "Layer 3", "concept_tag": "NAT", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show ip nat statistics, show ip nat translations", "fix_steps": ["Clear stale entries with 'clear ip nat translation *'", "consider tuning NAT timeout values ('ip nat translation timeout') to expire idle sessions sooner."], "reviewer_note": "", "corrected": null}, {"case_id": "C029", "is_correct": true, "root_cause": "WPA2-PSK security is disabled on the WLAN profile (still Open System), so the client's PSK is never actually validated the way the client expects, causing a handshake/association mismatch.", "osi_layer": "Layer 1/2", "concept_tag": "Wireless", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show wlan <id>, verify security settings match client expectation", "fix_steps": ["Enable WPA2-PSK on the WLAN with the correct passphrase", "re-associate a test client to confirm successful authentication."], "reviewer_note": "", "corrected": null}, {"case_id": "C030", "is_correct": true, "root_cause": "Physical/RF coverage gap due to AP placement and low-gain antenna for the building size -- a Layer 1 coverage design issue, not a configuration error.", "osi_layer": "Layer 1", "concept_tag": "Wireless", "confidence": "Medium", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "site survey / heatmap, show controller dot11Radio 0", "fix_steps": ["Reposition the AP toward the center of the coverage area", "raise mounting height", "or add a second AP to remove the coverage gap."], "reviewer_note": "", "corrected": null}, {"case_id": "C031", "is_correct": true, "root_cause": "VLAN 20 (the wireless client VLAN) is not permitted on the trunk between the WLC/AP switch port and the rest of the network, so DHCP requests never leave the access layer.", "osi_layer": "Layer 2/3", "concept_tag": "Wireless", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show interfaces trunk, switchport trunk allowed vlan add 20", "fix_steps": ["Add VLAN 20 to the trunk's allowed VLAN list on Gi0/2", "retest client DHCP."], "reviewer_note": "", "corrected": null}, {"case_id": "C032", "is_correct": false, "root_cause": "Guest isolation ACL is present and working as intended.", "osi_layer": "Layer 2", "concept_tag": "Wireless", "confidence": "Medium", "evidence": "An ACL named GUEST_ISOLATION exists in 'show access-lists' output.", "next_command": "show running-config", "fix_steps": ["No action needed"], "reviewer_note": "The AI saw an ACL with a reassuring name and stopped reading, missing two real problems in the same output: (1) the ACL is 'installed but not applied' to any interface, and (2) its single rule is 'permit ip ... any', which does the opposite of isolating guests. Corrected to: ACL not applied + inverted rule logic, both must be fixed.", "corrected": {"root_cause": "Guest isolation ACL exists but was never applied to the guest subinterface, and its single rule permits all traffic anyway -- both a missing application and an inverted rule logic bug.", "osi_layer": "Layer 2", "concept_tag": "Wireless", "confidence": "High", "evidence": "Directly supported by the show-command output for this case (see show_output).", "next_command": "show access-lists, show run interface Gi0/1.99", "fix_steps": ["Rewrite the ACL to deny guest-to-internal subnets and permit only internet-bound traffic", "then apply it with 'ip access-group GUEST_ISOLATION in' on Gi0/1.99."]}}];
-const RULE_RESULTS = [{"case_id": "C001", "findings": [{"check": "interface_down", "severity": "High", "detail": "Interface reported as 'notconnect': Fa0/3             notconnect   10     auto    auto  10/100BaseTX"}]}, {"case_id": "C002", "findings": [{"check": "missing_vlan", "severity": "High", "detail": "Access port is still assigned to default VLAN 1 - it was likely never moved to its target VLAN."}]}, {"case_id": "C003", "findings": []}, {"case_id": "C004", "findings": [{"check": "missing_route", "severity": "Medium", "detail": "Network 192.168.40.1/24 is referenced but has no matching entry in 'show ip route' output."}]}, {"case_id": "C005", "findings": [{"check": "gateway_mismatch", "severity": "High", "detail": "Host IP 192.168.10.15 is not in the same /24 as its default gateway 192.168.20.1."}]}, {"case_id": "C006", "findings": [{"check": "duplicate_ip", "severity": "High", "detail": "IP 192.168.10.1 appears associated with multiple sources: GigabitEthernet0/0, R1."}, {"check": "interface_down", "severity": "High", "detail": "Interface reported as 'administratively down': GigabitEthernet0/0     192.168.10.1    YES manual administratively down down"}]}, {"case_id": "C007", "findings": []}, {"case_id": "C008", "findings": [{"check": "duplicate_ip", "severity": "High", "detail": "IP 192.168.30.1 appears associated with multiple sources: GigabitEthernet0/2, PC5."}]}, {"case_id": "C009", "findings": []}, {"case_id": "C010", "findings": []}, {"case_id": "C011", "findings": [{"check": "duplicate_ip", "severity": "High", "detail": "DHCP/IP conflict log entry detected in output."}]}, {"case_id": "C012", "findings": []}, {"case_id": "C013", "findings": []}, {"case_id": "C014", "findings": []}, {"case_id": "C015", "findings": []}, {"case_id": "C016", "findings": []}, {"case_id": "C017", "findings": [{"check": "mask_mismatch", "severity": "Medium", "detail": "Multiple different prefix lengths found: 24, 30."}, {"check": "missing_route", "severity": "Medium", "detail": "Network 192.168.100.0/24 is referenced but has no matching entry in 'show ip route' output."}]}, {"case_id": "C018", "findings": []}, {"case_id": "C019", "findings": []}, {"case_id": "C020", "findings": []}, {"case_id": "C021", "findings": []}, {"case_id": "C022", "findings": []}, {"case_id": "C023", "findings": []}, {"case_id": "C024", "findings": []}, {"case_id": "C025", "findings": []}, {"case_id": "C026", "findings": []}, {"case_id": "C027", "findings": []}, {"case_id": "C028", "findings": []}, {"case_id": "C029", "findings": []}, {"case_id": "C030", "findings": []}, {"case_id": "C031", "findings": [{"check": "missing_vlan", "severity": "High", "detail": "VLAN(s) 20 referenced in the case but not present in the trunk's allowed VLAN list."}]}, {"case_id": "C032", "findings": []}];
 
-const aiByCase = Object.fromEntries(AI_DIAGNOSES.map(d => [d.case_id, d]));
-const rulesByCase = Object.fromEntries(RULE_RESULTS.map(r => [r.case_id, r]));
+/* =========================================
+   DATA
+========================================= */
 
-/* review state: case_id -> {status, note, diagnosis} */
-const reviews = {};
-CASES.forEach(c => { reviews[c.case_id] = { status: 'Pending', note: '', ranDiagnosis: false, diagnosis: null }; });
+const cases = [
 
-/* seed the Responsible AI log with the pre-built flawed/corrected examples */
-AI_DIAGNOSES.filter(d => !d.is_correct).forEach(d => {
-  reviews[d.case_id] = {
-    status: 'Edited',
-    note: d.reviewer_note,
-    ranDiagnosis: true,
-    diagnosis: { ...d },
-    corrected: d.corrected
-  };
-});
+{
+    id:"C001",
+    type:"VLAN",
+    layer:"Layer 2",
+    severity:"Medium",
 
-let activeConcept = 'All';
-let selectedCase = CASES[0].case_id;
+    symptom:
+    "PC1 in VLAN 10 cannot ping PC2. PC2 has no link light.",
 
-/* ======================= FILTERS + LIST ======================= */
-const CONCEPTS = ['All', ...Array.from(new Set(CASES.map(c => c.concept_tag)))];
+    topology:
+    "SW1 Fa0/2 = PC1 VLAN10. SW1 Fa0/3 = PC2 VLAN10.",
 
-function renderFilters(){
-  const el = document.getElementById('filters');
-  el.innerHTML = CONCEPTS.map(c =>
-    `<div class="chip ${c===activeConcept?'active':''}" data-c="${c}">${c}${c!=='All' ? ' · '+CASES.filter(x=>x.concept_tag===c).length : ''}</div>`
-  ).join('');
-  el.querySelectorAll('.chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      activeConcept = chip.dataset.c;
-      renderFilters();
-      renderCaseList();
-    });
-  });
+    output:
+`SW1# show interfaces status
+
+Port      Status       Vlan
+Fa0/2     connected    10
+Fa0/3     notconnect   10`,
+
+    diagnosis:
+    "Fa0/3 is physically down or notconnect.",
+
+    evidence:
+    "The output shows Fa0/3 as notconnect.",
+
+    command:
+    "show interfaces Fa0/3",
+
+    fixes:[
+        "Check the cable connected to Fa0/3.",
+        "Confirm the PC network adapter is enabled.",
+        "Replace the cable if necessary.",
+        "Run show interfaces status again."
+    ],
+
+    rule:"Interface Down"
+},
+
+
+{
+    id:"C002",
+    type:"VLAN",
+    layer:"Layer 2",
+    severity:"High",
+
+    symptom:
+    "PC3 cannot obtain an IP address.",
+
+    topology:
+    "Fa0/5 should be an access port in VLAN 20.",
+
+    output:
+`SW1# show interfaces Fa0/5 switchport
+
+Administrative Mode: static access
+Operational Mode: static access
+Access Mode VLAN: 1`,
+
+    diagnosis:
+    "Fa0/5 is assigned to VLAN 1 instead of VLAN 20.",
+
+    evidence:
+    "Access Mode VLAN is 1.",
+
+    command:
+    "show interfaces Fa0/5 switchport",
+
+    fixes:[
+        "Enter interface configuration mode.",
+        "Set switchport mode access.",
+        "Set switchport access vlan 20.",
+        "Renew the PC DHCP lease."
+    ],
+
+    rule:"Missing VLAN"
+},
+
+
+{
+    id:"C003",
+    type:"Gateway",
+    layer:"Layer 3",
+    severity:"High",
+
+    symptom:
+    "Host can communicate locally but cannot reach remote networks.",
+
+    topology:
+    "PC1 belongs to 192.168.10.0/24.",
+
+    output:
+`PC1> ipconfig
+
+IPv4 Address: 192.168.10.50
+Subnet Mask: 255.255.255.0
+Default Gateway: 192.168.20.1`,
+
+    diagnosis:
+    "The host has an incorrect default gateway.",
+
+    evidence:
+    "192.168.20.1 is outside the 192.168.10.0/24 subnet.",
+
+    command:
+    "ipconfig",
+
+    fixes:[
+        "Change the gateway to 192.168.10.1.",
+        "Verify the host IP configuration.",
+        "Ping the gateway.",
+        "Test the remote network."
+    ],
+
+    rule:"Gateway Mismatch"
+},
+
+
+{
+    id:"C004",
+    type:"DHCP",
+    layer:"Layer 3",
+    severity:"High",
+
+    symptom:
+    "All PCs in VLAN 10 receive 169.254.x.x addresses.",
+
+    topology:
+    "VLAN 10 should receive addresses from a DHCP pool on R1.",
+
+    output:
+`R1# show ip dhcp pool
+
+Pool VLAN20
+Network 192.168.20.0 /24
+
+Pool VLAN30
+Network 192.168.30.0 /24
+
+(no VLAN10 pool)`,
+
+    diagnosis:
+    "The DHCP pool for VLAN 10 is missing.",
+
+    evidence:
+    "There is no VLAN10 pool in the DHCP configuration.",
+
+    command:
+    "show ip dhcp pool",
+
+    fixes:[
+        "Create ip dhcp pool VLAN10.",
+        "Configure the correct network.",
+        "Configure default-router 192.168.10.1.",
+        "Renew the client DHCP lease."
+    ],
+
+    rule:"Missing DHCP Pool"
+},
+
+
+{
+    id:"C005",
+    type:"DNS",
+    layer:"Layer 7",
+    severity:"Medium",
+
+    symptom:
+    "Users can ping the DNS server IP but cannot resolve domain names.",
+
+    topology:
+    "DNS server is 192.168.1.53.",
+
+    output:
+`R1# show run | section dhcp
+
+ip dhcp pool VLAN20
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.1
+
+(no dns-server line)`,
+
+    diagnosis:
+    "The DHCP pool does not provide a DNS server address.",
+
+    evidence:
+    "No dns-server statement exists.",
+
+    command:
+    "show run | section dhcp",
+
+    fixes:[
+        "Add dns-server 192.168.1.53.",
+        "Renew client DHCP leases.",
+        "Run nslookup.",
+        "Verify DNS resolution."
+    ],
+
+    rule:"Missing DNS Server"
+},
+
+
+{
+    id:"C006",
+    type:"Routing",
+    layer:"Layer 3",
+    severity:"High",
+
+    symptom:
+    "VLAN 10 hosts cannot reach the remote server subnet.",
+
+    topology:
+    "R1 connects to R2 through 10.0.0.0/30.",
+
+    output:
+`R1# show ip route
+
+C 192.168.10.0/24
+C 192.168.20.0/24
+C 10.0.0.0/30
+
+(no route to 192.168.100.0/24)`,
+
+    diagnosis:
+    "R1 has no route to 192.168.100.0/24.",
+
+    evidence:
+    "No routing-table entry exists for the remote network.",
+
+    command:
+    "show ip route",
+
+    fixes:[
+        "Add a route for 192.168.100.0/24.",
+        "Use R2 as the next hop.",
+        "Verify the route.",
+        "Ping the remote server."
+    ],
+
+    rule:"Missing Route"
+},
+
+
+{
+    id:"C007",
+    type:"ACL",
+    layer:"Layer 3/4",
+    severity:"Critical",
+
+    symptom:
+    "PC can ping its gateway but cannot reach the file server.",
+
+    topology:
+    "R1 Gi0/0.30 has an inbound ACL.",
+
+    output:
+`R1# show access-lists
+
+Extended IP access list VLAN30_IN
+
+10 deny ip any host 192.168.30.50
+20 permit ip any any`,
+
+    diagnosis:
+    "The ACL explicitly denies traffic to the file server.",
+
+    evidence:
+    "ACL sequence 10 denies traffic to 192.168.30.50.",
+
+    command:
+    "show access-lists",
+
+    fixes:[
+        "Review ACL sequence 10.",
+        "Remove or modify the deny statement.",
+        "Verify the ACL.",
+        "Retest the file server."
+    ],
+
+    rule:"ACL Denial"
+},
+
+
+{
+    id:"C008",
+    type:"Wireless",
+    layer:"Layer 2",
+    severity:"High",
+
+    symptom:
+    "Wireless clients connect but never receive an IP address.",
+
+    topology:
+    "Wireless clients should use VLAN 20.",
+
+    output:
+`SW1# show interfaces trunk
+
+Port      Status
+Gi0/2     trunking
+
+Vlans allowed on trunk
+Gi0/2     10,30
+
+VLAN 20 is missing.`,
+
+    diagnosis:
+    "VLAN 20 is not allowed on the trunk.",
+
+    evidence:
+    "The trunk allows VLANs 10 and 30 but not VLAN 20.",
+
+    command:
+    "show interfaces trunk",
+
+    fixes:[
+        "Enter Gi0/2.",
+        "Add VLAN 20 to the allowed list.",
+        "Verify the trunk.",
+        "Reconnect the wireless client."
+    ],
+
+    rule:"Missing Wireless VLAN"
+},
+
+
+{
+    id:"C009",
+    type:"NAT",
+    layer:"Layer 3/4",
+    severity:"High",
+
+    symptom:
+    "Internet users cannot reach the internal web server.",
+
+    topology:
+    "Public server address is 203.0.113.10.",
+
+    output:
+`R1# show run | include ip nat inside source static
+
+ip nat inside source static tcp
+192.168.1.80 8080 203.0.113.10 80`,
+
+    diagnosis:
+    "NAT forwards to port 8080 internally while the server uses port 80.",
+
+    evidence:
+    "The NAT rule contains internal port 8080 and external port 80.",
+
+    command:
+    "show run | include ip nat inside source static",
+
+    fixes:[
+        "Verify the server listening port.",
+        "Change the internal NAT port to 80.",
+        "Save the configuration.",
+        "Test the public address."
+    ],
+
+    rule:"NAT Port Mismatch"
 }
 
-function renderCaseList(){
-  const el = document.getElementById('caseList');
-  const list = CASES.filter(c => activeConcept==='All' || c.concept_tag===activeConcept);
-  el.innerHTML = list.map(c => `
-    <div class="case-item ${c.case_id===selectedCase?'active':''}" data-id="${c.case_id}">
-      <div class="row1">
-        <span class="case-id"><span class="led ${c.severity}"></span>${c.case_id}</span>
-        <span class="tag">${c.concept_tag}</span>
-      </div>
-      <div class="symptom">${c.symptom}</div>
-    </div>
-  `).join('');
-  el.querySelectorAll('.case-item').forEach(item => {
-    item.addEventListener('click', () => {
-      selectedCase = item.dataset.id;
-      renderCaseList();
-      renderCaseDetail();
-    });
-  });
-}
+];
 
-/* ======================= CASE DETAIL / DIAGNOSIS ======================= */
-function renderCaseDetail(){
-  const c = CASES.find(x => x.case_id === selectedCase);
-  const rev = reviews[c.case_id];
-  const el = document.getElementById('caseDetail');
 
-  el.innerHTML = `
-    <div class="panel">
-      <h3>Evidence — ${c.case_id}</h3>
-      <div class="kv"><b>Symptom</b>${c.symptom}</div>
-      <div class="kv"><b>Topology note</b>${c.topology_note}</div>
-      <div class="kv"><b>Show-command output</b></div>
-      <div class="code-block">${escapeHtml(c.show_output)}</div>
-      <div style="margin-top:10px; display:flex; gap:16px; font-size:12px; color:var(--text-dim);">
-        <span><span class="led ${c.severity}"></span>${c.severity} severity</span>
-        <span>${c.osi_layer}</span>
-        <span>${c.concept_tag}</span>
-      </div>
-    </div>
+/* =========================================
+   STATE
+========================================= */
 
-    <div class="panel">
-      <h3>AI Diagnosis</h3>
-      <div id="diagArea">${rev.ranDiagnosis ? diagOutputHtml(rev.diagnosis) : `<p class="empty-hint">Not run yet for this case.</p>`}</div>
-      <div class="diag-actions">
-        <button class="btn primary" id="runDiagBtn">▶ Run AI Diagnosis</button>
-      </div>
-    </div>
+let selectedCase = null;
 
-    <div class="panel">
-      <h3>Rule Checker (deterministic)</h3>
-      <div id="ruleArea">${ruleFindingsHtml(c.case_id)}</div>
-    </div>
+let reviewCase = null;
 
-    <div class="panel">
-      <h3>Human Review</h3>
-      <div class="kv"><b>Current status</b><span class="review-status ${rev.status}">${rev.status}</span></div>
-      <label class="small-label">Reviewer note</label>
-      <textarea id="reviewNote" rows="3" placeholder="Explain why you accepted, edited, or rejected this diagnosis...">${rev.note}</textarea>
-      <div class="diag-actions">
-        <button class="btn green" id="acceptBtn" ${rev.ranDiagnosis?'':'disabled'}>✓ Accept</button>
-        <button class="btn teal" id="editBtn" ${rev.ranDiagnosis?'':'disabled'}>✎ Mark Edited</button>
-        <button class="btn red" id="rejectBtn" ${rev.ranDiagnosis?'':'disabled'}>✕ Reject</button>
-      </div>
-    </div>
-  `;
+let reviews =
+JSON.parse(
+    localStorage.getItem("netsageReviews") || "{}"
+);
 
-  document.getElementById('runDiagBtn').addEventListener('click', () => runDiagnosis(c.case_id));
-  document.getElementById('acceptBtn').addEventListener('click', () => setReview(c.case_id, 'Accepted'));
-  document.getElementById('editBtn').addEventListener('click', () => setReview(c.case_id, 'Edited'));
-  document.getElementById('rejectBtn').addEventListener('click', () => setReview(c.case_id, 'Rejected'));
-}
+let rai =
+JSON.parse(
+    localStorage.getItem("netsageRAI") || "[]"
+);
 
-function diagOutputHtml(d){
-  return `
-    <div class="diag-output">
-      <div class="diag-field"><div class="flabel">root_cause</div><div class="fval">${d.root_cause}</div></div>
-      <div class="diag-field"><div class="flabel">osi_layer / concept_tag</div><div class="fval">${d.osi_layer} · ${d.concept_tag}</div></div>
-      <div class="diag-field"><div class="flabel">confidence</div><div class="fval"><span class="conf-badge conf-${d.confidence}">${d.confidence}</span></div></div>
-      <div class="diag-field"><div class="flabel">evidence</div><div class="fval">${d.evidence}</div></div>
-      <div class="diag-field"><div class="flabel">next_command</div><div class="fval">${d.next_command}</div></div>
-      <div class="diag-field"><div class="flabel">fix_steps</div><div class="fval">${(d.fix_steps||[]).map((s,i)=>`${i+1}. ${s}`).join('<br>')}</div></div>
-    </div>
-  `;
-}
 
-function ruleFindingsHtml(caseId){
-  const r = rulesByCase[caseId];
-  if(!r || !r.findings || r.findings.length===0){
-    return `<div class="rule-clean">✓ No deterministic rule violations detected.</div>`;
-  }
-  return r.findings.map(f => `
-    <div class="rule-finding sev-${f.severity}">
-      <div class="fcheck">${f.check.replace(/_/g,' ')} · ${f.severity}</div>
-      <div>${f.detail}</div>
-    </div>
-  `).join('');
-}
+/* =========================================
+   NAVIGATION
+========================================= */
 
-function runDiagnosis(caseId){
-  const rev = reviews[caseId];
-  const d = aiByCase[caseId];
-  rev.ranDiagnosis = true;
-  rev.diagnosis = { ...d };
-  rev.status = rev.status === 'Pending' ? 'Pending' : rev.status;
-  renderCaseDetail();
-}
+function showPage(page,button) {
 
-function setReview(caseId, status){
-  const rev = reviews[caseId];
-  rev.status = status;
-  rev.note = document.getElementById('reviewNote').value;
-  if(status !== 'Accepted' && !rev.corrected && rev.diagnosis){
-    // if a case is edited/rejected that wasn't pre-seeded, build a placeholder "corrected" view
-    const c = CASES.find(x=>x.case_id===caseId);
-    rev.corrected = {
-      root_cause: c.expected_fault, osi_layer: c.osi_layer, confidence: 'High',
-      next_command: c.next_command, fix_steps: c.fix.split(', ')
+    document
+        .querySelectorAll(".section")
+        .forEach(s =>
+            s.classList.remove("active")
+        );
+
+    document
+        .getElementById(page)
+        .classList.add("active");
+
+
+    document
+        .querySelectorAll(".nav button")
+        .forEach(b =>
+            b.classList.remove("active")
+        );
+
+    if(button) {
+        button.classList.add("active");
+    }
+
+
+    const titles = {
+
+        dashboard:
+        [
+            "Dashboard",
+            "AI-assisted network troubleshooting"
+        ],
+
+        cases:
+        [
+            "Case Explorer",
+            "Analyze network troubleshooting evidence"
+        ],
+
+        review:
+        [
+            "Human Review",
+            "Review AI recommendations"
+        ],
+
+        rai:
+        [
+            "Responsible AI",
+            "Human corrections and safety record"
+        ]
+
     };
-  }
-  renderCaseDetail();
-  renderDashboard();
-  renderLog();
+
+
+    document.getElementById("pageTitle")
+        .textContent =
+        titles[page][0];
+
+
+    document.getElementById("pageSubtitle")
+        .textContent =
+        titles[page][1];
+
+
+    if(page === "review") {
+        renderReviews();
+    }
+
+    if(page === "rai") {
+        renderRAI();
+    }
+
 }
 
-/* ======================= DASHBOARD ======================= */
-function renderDashboard(){
-  const reviewedList = Object.entries(reviews).filter(([id,r]) => r.status !== 'Pending');
-  const counts = { Accepted:0, Edited:0, Rejected:0 };
-  reviewedList.forEach(([id,r]) => counts[r.status]++);
-  const totalReviewed = reviewedList.length;
 
-  document.getElementById('statCards').innerHTML = `
-    <div class="stat-card"><div class="stat-num">${CASES.length}</div><div class="stat-label">Total cases</div></div>
-    <div class="stat-card"><div class="stat-num">${totalReviewed}</div><div class="stat-label">Cases reviewed</div></div>
-    <div class="stat-card"><div class="stat-num">${counts.Accepted}</div><div class="stat-label">AI accepted as-is</div></div>
-    <div class="stat-card"><div class="stat-num">${counts.Edited + counts.Rejected}</div><div class="stat-label">AI corrected</div></div>
-  `;
+function showPageById(page) {
 
-  // concept chart
-  const conceptCounts = {};
-  CASES.forEach(c => conceptCounts[c.concept_tag] = (conceptCounts[c.concept_tag]||0)+1);
-  const maxC = Math.max(...Object.values(conceptCounts));
-  document.getElementById('chartConcept').innerHTML = Object.entries(conceptCounts).map(([k,v]) => `
-    <div class="bar-row">
-      <div class="bar-label">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxC*100)}%"></div></div>
-      <div class="bar-count">${v}</div>
-    </div>
-  `).join('');
+    showPage(page);
 
-  // severity chart
-  const sevOrder = ['Low','Medium','High','Critical'];
-  const sevCounts = {}; CASES.forEach(c => sevCounts[c.severity] = (sevCounts[c.severity]||0)+1);
-  const maxS = Math.max(...Object.values(sevCounts));
-  document.getElementById('chartSeverity').innerHTML = sevOrder.filter(s=>sevCounts[s]).map(k => `
-    <div class="bar-row">
-      <div class="bar-label">${k}</div>
-      <div class="bar-track"><div class="bar-fill amber" style="width:${(sevCounts[k]/maxS*100)}%"></div></div>
-      <div class="bar-count">${sevCounts[k]}</div>
-    </div>
-  `).join('');
-
-  // agreement bar
-  const agreeEl = document.getElementById('agreeBar');
-  if(totalReviewed === 0){
-    agreeEl.innerHTML = `<div class="agree-seg" style="width:100%; background:var(--line-soft); color:var(--text-faint);">No reviews logged yet</div>`;
-  } else {
-    agreeEl.innerHTML = ['Accepted','Edited','Rejected'].filter(s=>counts[s]>0).map(s => `
-      <div class="agree-seg ${s}" style="width:${(counts[s]/totalReviewed*100)}%">${counts[s]}</div>
-    `).join('');
-  }
 }
 
-/* ======================= RESPONSIBLE AI LOG ======================= */
-function renderLog(){
-  const entries = Object.entries(reviews).filter(([id,r]) => r.status==='Edited' || r.status==='Rejected');
-  const el = document.getElementById('logList');
-  if(entries.length===0){
-    el.innerHTML = `<p class="empty-hint">No corrections logged yet.</p>`;
-    return;
-  }
-  el.innerHTML = entries.map(([id, r]) => {
-    const c = CASES.find(x=>x.case_id===id);
-    const corr = r.corrected || {};
-    return `
-    <div class="log-entry">
-      <div class="log-head">
-        <span class="cid">${id} — ${c.concept_tag}</span>
-        <span class="review-status ${r.status}">${r.status}</span>
-      </div>
-      <div class="kv" style="margin-bottom:14px;"><b>Symptom</b>${c.symptom}</div>
-      <div class="log-cols">
-        <div class="log-col before">
-          <h4>AI said</h4>
-          <div style="font-size:13px;">${r.diagnosis ? r.diagnosis.root_cause : '—'}</div>
+
+/* =========================================
+   CASE LIST
+========================================= */
+
+function renderCases() {
+
+    const list =
+        document.getElementById("caseList");
+
+    const category =
+        document.getElementById("category").value;
+
+    const search =
+        document.getElementById("search")
+        .value
+        .toLowerCase();
+
+
+    const filtered =
+        cases.filter(c => {
+
+            const categoryMatch =
+                category === "all" ||
+                c.type === category;
+
+            const searchMatch =
+                c.id.toLowerCase().includes(search) ||
+                c.type.toLowerCase().includes(search) ||
+                c.symptom.toLowerCase().includes(search);
+
+            return categoryMatch && searchMatch;
+
+        });
+
+
+    document.getElementById("caseCount")
+        .textContent =
+        filtered.length + " cases";
+
+
+    list.innerHTML = "";
+
+
+    filtered.forEach(c => {
+
+        const div =
+            document.createElement("div");
+
+
+        div.className =
+            "case" +
+            (
+                selectedCase &&
+                selectedCase.id === c.id
+                    ? " selected"
+                    : ""
+            );
+
+
+        div.innerHTML = `
+
+            <div class="case-top">
+
+                <span class="case-id">
+                    ${c.id}
+                </span>
+
+                <span class="badge ${severityClass(c.severity)}">
+                    ${c.severity}
+                </span>
+
+            </div>
+
+            <p>
+                ${c.type} · ${c.symptom}
+            </p>
+
+        `;
+
+
+        div.onclick =
+            () => selectCase(c);
+
+
+        list.appendChild(div);
+
+    });
+
+}
+
+
+/* =========================================
+   SELECT CASE
+========================================= */
+
+function selectCase(c) {
+
+    selectedCase = c;
+
+    renderCases();
+
+    renderDetails(c);
+
+}
+
+
+/* =========================================
+   CASE DETAILS
+========================================= */
+
+function renderDetails(c) {
+
+    const details =
+        document.getElementById("details");
+
+
+    const review =
+        reviews[c.id];
+
+
+    details.innerHTML = `
+
+        <div class="detail-card">
+
+            <div class="detail-title">
+
+                <h2>
+                    ${c.id} · ${c.type}
+                </h2>
+
+                <br>
+
+                <span class="badge ${severityClass(c.severity)}">
+                    ${c.severity}
+                </span>
+
+                <span class="badge low">
+                    ${c.layer}
+                </span>
+
+            </div>
+
+            <div class="detail-content">
+
+                <strong>
+                    Symptom
+                </strong>
+
+                <p>
+                    ${c.symptom}
+                </p>
+
+                <br>
+
+                <strong>
+                    Topology
+                </strong>
+
+                <p class="muted">
+                    ${c.topology}
+                </p>
+
+            </div>
+
         </div>
-        <div class="log-col after">
-          <h4>Human corrected to</h4>
-          <div style="font-size:13px;">${corr.root_cause || c.expected_fault}</div>
+
+
+        <div class="detail-card">
+
+            <div class="detail-title">
+
+                <h3>
+                    Show Command Output
+                </h3>
+
+            </div>
+
+            <pre>${escapeHTML(c.output)}</pre>
+
         </div>
-      </div>
-      ${r.note ? `<div class="reviewer-note"><b>Reviewer note:</b> ${r.note}</div>` : ''}
-    </div>
-  `}).join('');
+
+
+        <div class="ai-result">
+
+            <div class="ai-header">
+
+                <h3>
+                    🤖 AI Diagnosis
+                </h3>
+
+                <span class="badge low">
+                    Advisory Only
+                </span>
+
+            </div>
+
+
+            <div class="ai-grid">
+
+
+                <div class="ai-box full">
+
+                    <label>
+                        Root Cause
+                    </label>
+
+                    <p>
+                        ${c.diagnosis}
+                    </p>
+
+                </div>
+
+
+                <div class="ai-box">
+
+                    <label>
+                        Evidence
+                    </label>
+
+                    <p>
+                        ${c.evidence}
+                    </p>
+
+                </div>
+
+
+                <div class="ai-box">
+
+                    <label>
+                        Next Command
+                    </label>
+
+                    <p>
+                        ${c.command}
+                    </p>
+
+                </div>
+
+
+                <div class="ai-box full">
+
+                    <label>
+                        Fix Steps
+                    </label>
+
+                    <ol>
+
+                        ${c.fixes
+                            .map(f =>
+                                `<li>${f}</li>`
+                            )
+                            .join("")
+                        }
+
+                    </ol>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="rule-box">
+
+            <div class="rule-header">
+
+                <strong>
+                    🔎 Deterministic Rule Checker
+                </strong>
+
+                <span
+                    style="color:#29d391"
+                >
+                    ✓ Finding detected
+                </span>
+
+            </div>
+
+            <div class="rule-finding">
+
+                <strong>
+                    ${c.rule}
+                </strong>
+
+                <p>
+                    Rule-based analysis detected a
+                    configuration issue consistent
+                    with this case.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="review-button"
+            onclick="openReview('${c.id}')"
+        >
+
+            👤
+            ${
+                review
+                ? "Review Again · " + review.status
+                : "Send to Human Review"
+            }
+
+        </button>
+
+    `;
+
 }
 
-function escapeHtml(str){
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* =========================================
+   REVIEW
+========================================= */
+
+function openReview(id) {
+
+    reviewCase = id;
+
+    document
+        .getElementById("modal")
+        .classList.add("show");
+
+    document
+        .getElementById("reviewNote")
+        .value = "";
+
 }
 
-/* ======================= INIT ======================= */
-renderFilters();
-renderCaseList();
-renderCaseDetail();
-renderDashboard();
-renderLog();
+
+function closeModal() {
+
+    document
+        .getElementById("modal")
+        .classList.remove("show");
+
+    reviewCase = null;
+
+}
+
+
+function saveReview(status) {
+
+    if(!reviewCase) return;
+
+
+    const note =
+        document
+        .getElementById("reviewNote")
+        .value
+        .trim();
+
+
+    if(!note) {
+
+        alert(
+            "Please enter a reviewer note."
+        );
+
+        return;
+
+    }
+
+
+    const c =
+        cases.find(
+            x => x.id === reviewCase
+        );
+
+
+    reviews[reviewCase] = {
+
+        status: status,
+
+        note: note,
+
+        time:
+        new Date().toLocaleString()
+
+    };
+
+
+    localStorage.setItem(
+        "netsageReviews",
+        JSON.stringify(reviews)
+    );
+
+
+    if(
+        status === "Edited" ||
+        status === "Rejected"
+    ) {
+
+        rai.push({
+
+            id: c.id,
+
+            type: c.type,
+
+            ai: c.diagnosis,
+
+            human: note,
+
+            result: status,
+
+            time:
+            new Date().toLocaleString()
+
+        });
+
+
+        localStorage.setItem(
+            "netsageRAI",
+            JSON.stringify(rai)
+        );
+
+    }
+
+
+    closeModal();
+
+    renderDetails(c);
+
+    updateDashboard();
+
+    renderReviews();
+
+    renderRAI();
+
+    alert(
+        "Human review saved: " + status
+    );
+
+}
+
+
+/* =========================================
+   REVIEW PAGE
+========================================= */
+
+function renderReviews() {
+
+    const container =
+        document.getElementById("reviewContent");
+
+
+    const entries =
+        Object.entries(reviews);
+
+
+    if(entries.length === 0) {
+
+        container.innerHTML = `
+
+            <p class="muted">
+                No cases have been reviewed yet.
+                Open Case Explorer and review a diagnosis.
+            </p>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        entries
+        .map(([id,r]) => {
+
+            const c =
+                cases.find(
+                    x => x.id === id
+                );
+
+
+            return `
+
+                <div class="rai-card">
+
+                    <h3>
+                        ${id} · ${c.type}
+
+                        <span class="badge low">
+                            ${r.status}
+                        </span>
+                    </h3>
+
+                    <p>
+                        <strong>
+                            AI:
+                        </strong>
+
+                        ${c.diagnosis}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Reviewer:
+                        </strong>
+
+                        ${r.note}
+                    </p>
+
+                    <p>
+                        ${r.time}
+                    </p>
+
+                </div>
+
+            `;
+
+        })
+        .join("");
+
+}
+
+
+/* =========================================
+   RESPONSIBLE AI
+========================================= */
+
+function renderRAI() {
+
+    const container =
+        document.getElementById("raiContent");
+
+
+    if(rai.length === 0) {
+
+        container.innerHTML = `
+
+            <div class="detail-card">
+
+                <div class="detail-content">
+
+                    <h3>
+                        🛡️ No corrections yet
+                    </h3>
+
+                    <p class="muted">
+                        Edited and rejected AI diagnoses
+                        will appear here.
+                    </p>
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        rai
+        .slice()
+        .reverse()
+        .map(x => `
+
+            <div class="rai-card">
+
+                <h3>
+
+                    ${x.id}
+                    ·
+                    ${x.type}
+
+                    <span class="badge high">
+                        ${x.result}
+                    </span>
+
+                </h3>
+
+
+                <p>
+
+                    <strong>
+                        AI Diagnosis:
+                    </strong>
+
+                    ${x.ai}
+
+                </p>
+
+
+                <p>
+
+                    <strong>
+                        Human Correction:
+                    </strong>
+
+                    ${x.human}
+
+                </p>
+
+
+                <p>
+                    ${x.time}
+                </p>
+
+            </div>
+
+        `)
+        .join("");
+
+}
+
+
+/* =========================================
+   DASHBOARD
+========================================= */
+
+function updateDashboard() {
+
+    const total =
+        cases.length;
+
+
+    const high =
+        cases.filter(
+            c =>
+                c.severity === "High" ||
+                c.severity === "Critical"
+        ).length;
+
+
+    const reviewed =
+        Object.keys(reviews).length;
+
+
+    const accepted =
+        Object.values(reviews)
+        .filter(
+            r => r.status === "Accepted"
+        ).length;
+
+
+    const edited =
+        Object.values(reviews)
+        .filter(
+            r => r.status === "Edited"
+        ).length;
+
+
+    const rejected =
+        Object.values(reviews)
+        .filter(
+            r => r.status === "Rejected"
+        ).length;
+
+
+    const agreement =
+        reviewed === 0
+        ? 0
+        : Math.round(
+            accepted / reviewed * 100
+        );
+
+
+    document.getElementById("totalCases")
+        .textContent = total;
+
+
+    document.getElementById("highCases")
+        .textContent = high;
+
+
+    document.getElementById("reviewedCases")
+        .textContent = reviewed;
+
+
+    document.getElementById("agreement")
+        .textContent = agreement + "%";
+
+
+    document.getElementById("accepted")
+        .textContent = accepted;
+
+
+    document.getElementById("edited")
+        .textContent = edited;
+
+
+    document.getElementById("rejected")
+        .textContent = rejected;
+
+
+    const denominator =
+        Math.max(reviewed,1);
+
+
+    document.getElementById("acceptedBar")
+        .style.width =
+        (accepted / denominator * 100) + "%";
+
+
+    document.getElementById("editedBar")
+        .style.width =
+        (edited / denominator * 100) + "%";
+
+
+    document.getElementById("rejectedBar")
+        .style.width =
+        (rejected / denominator * 100) + "%";
+
+
+    renderChart();
+
+}
+
+
+/* =========================================
+   CHART
+========================================= */
+
+function renderChart() {
+
+    const counts = {};
+
+
+    cases.forEach(c => {
+
+        counts[c.type] =
+            (counts[c.type] || 0) + 1;
+
+    });
+
+
+    const max =
+        Math.max(
+            ...Object.values(counts)
+        );
+
+
+    const chart =
+        document.getElementById("issueChart");
+
+
+    chart.innerHTML =
+        Object.entries(counts)
+        .map(([type,count]) => {
+
+            const width =
+                count / max * 100;
+
+
+            return `
+
+                <div class="chart-row">
+
+                    <div class="chart-name">
+
+                        <span>
+                            ${type}
+                        </span>
+
+                        <span>
+                            ${count}
+                        </span>
+
+                    </div>
+
+                    <div class="chart-bg">
+
+                        <div
+                            class="chart-fill"
+                            style="width:${width}%"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        })
+        .join("");
+
+}
+
+
+/* =========================================
+   HELPERS
+========================================= */
+
+function severityClass(severity) {
+
+    if(
+        severity === "High" ||
+        severity === "Critical"
+    ) {
+
+        return "high";
+
+    }
+
+    if(severity === "Medium") {
+
+        return "medium";
+
+    }
+
+    return "low";
+
+}
+
+
+function escapeHTML(text) {
+
+    return text
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+/* =========================================
+   SEARCH EVENTS
+========================================= */
+
+document
+    .getElementById("category")
+    .addEventListener(
+        "change",
+        renderCases
+    );
+
+
+document
+    .getElementById("search")
+    .addEventListener(
+        "input",
+        renderCases
+    );
+
+
+/* =========================================
+   START APPLICATION
+========================================= */
+
+renderCases();
+
+updateDashboard();
+
+renderReviews();
+
+renderRAI();
+
 </script>
+
 </body>
 </html>
